@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Games · C-Lab</title>
+<!--
+  Cửa đăng nhập dùng chung của https://games.c-lab.support/ (xuong-game/tools/dang_bang.py đăng file này thành index.html).
+  Số liệu nằm trong du-lieu.enc, đã khoá AES-256-GCM; khoá rút từ "<tên đăng nhập>:<mật khẩu>" bằng PBKDF2-SHA256
+  (muối + số vòng ghi trong du-lieu.enc). Mở được thì nạp giao-dien.html (khuôn có đúng 1 chỗ /*__DU_LIEU__*/null),
+  thay số vào và vẽ trang. Máy nhớ khoá trong localStorage "gold-games-khoa" để lần sau khỏi đăng nhập.
+  Đăng xuất: mở trang với đuôi #dang-xuat.
+-->
+<style>
+  :root {
+    --nen: #eef1ec; --the: #ffffff; --chu: #1b211c; --nhat: #5d675f; --vien: #d5dbd3; --nhan: #e8692c;
+    --nhan-chu: #ffffff; --loi: #b42318; --o: #f7f9f6;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --nen: #121613; --the: #1b211c; --chu: #e9eee8; --nhat: #a3ada4; --vien: #2e3730; --nhan: #f08a4b;
+      --nhan-chu: #1b0f08; --loi: #ff8f7f; --o: #151a16; color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--nen); color: var(--chu);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: grid; place-items: center;
+    padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+             max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .the {
+    width: min(100%, 380px); background: var(--the); border: 1px solid var(--vien); border-radius: 16px;
+    padding: 28px 24px 22px; box-shadow: 0 12px 40px rgba(20, 30, 20, .08);
+  }
+  .dau { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .huy-hieu {
+    width: 44px; height: 44px; border-radius: 12px; background: var(--nhan); color: var(--nhan-chu);
+    display: grid; place-items: center; font-weight: 800; letter-spacing: .02em;
+  }
+  .ten-trang { font-weight: 750; font-size: 1.15rem; line-height: 1.2; }
+  .mien { color: var(--nhat); font-size: .85rem; }
+  label { display: block; font-size: .85rem; color: var(--nhat); margin: 14px 0 6px; }
+  input {
+    width: 100%; font: inherit; color: var(--chu); background: var(--o); border: 1px solid var(--vien);
+    border-radius: 10px; padding: 11px 12px;
+  }
+  input:focus-visible, button:focus-visible { outline: 3px solid color-mix(in srgb, var(--nhan) 55%, transparent); outline-offset: 2px; }
+  button {
+    width: 100%; margin-top: 20px; font: inherit; font-weight: 700; border: 0; border-radius: 10px; padding: 12px;
+    background: var(--nhan); color: var(--nhan-chu); cursor: pointer;
+  }
+  button[disabled] { opacity: .7; cursor: progress; }
+  .loi { min-height: 1.4em; margin: 12px 0 0; color: var(--loi); font-size: .9rem; }
+  .ghi { margin: 14px 0 0; color: var(--nhat); font-size: .8rem; }
+  .dang-mo { color: var(--nhat); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<p class="dang-mo" id="dang-mo">Đang mở…</p>
+<main class="the" id="cong" hidden>
+  <div class="dau">
+    <div class="huy-hieu" aria-hidden="true">CL</div>
+    <div>
+      <div class="ten-trang">Xưởng game</div>
+      <div class="mien">games.c-lab.support</div>
+    </div>
+  </div>
+  <form id="form" autocomplete="on">
+    <label for="ten">Tên đăng nhập</label>
+    <input id="ten" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+    <label for="mk">Mật khẩu</label>
+    <input id="mk" name="password" type="password" autocomplete="current-password" required>
+    <button id="nut" type="submit">Mở</button>
+    <p class="loi" id="loi" role="alert"></p>
+  </form>
+  <p class="ghi">Số liệu được khoá, chỉ mở được khi đăng nhập đúng. Máy này sẽ nhớ đăng nhập.</p>
+</main>
+<script>
+(async () => {
+  const KHOA = 'gold-games-khoa';
+  const $ = (id) => document.getElementById(id);
+  const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const raB64 = (buf) => { let s = ''; for (const b of new Uint8Array(buf)) s += String.fromCharCode(b); return btoa(s); };
+  const doc = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const ghi = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* bỏ qua */ } };
+  const loi = (t) => { $('loi').textContent = t; };
+  const hienCong = () => { $('dang-mo').hidden = true; $('cong').hidden = false; };
+
+  if (location.hash === '#dang-xuat') { ghi(KHOA, null); history.replaceState(null, '', location.pathname); }
+  if (!window.crypto || !crypto.subtle) { hienCong(); loi('Trình duyệt này không mở được trang. Hãy mở bằng Chrome hoặc Safari bản mới.'); return; }
+
+  let enc;
+  try {
+    const r = await fetch('du-lieu.enc', { cache: 'no-store' });
+    if (!r.ok) throw new Error(String(r.status));
+    enc = await r.json();
+  } catch (e) { hienCong(); loi('Không tải được số liệu. Kiểm tra mạng rồi tải lại trang.'); return; }
+
+  const giaiMa = async (key) => new TextDecoder().decode(
+    await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(enc.iv) }, key, b64(enc.ct)));
+
+  // Chèn vào đầu khuôn: phiên bản số đang hiện (IV của du-lieu.enc; máy ghi cùng giá trị vào ban.txt mỗi lần đăng).
+  const ban = '<script>window.GOLD_BAN=' + JSON.stringify(enc.iv) + ';<' + '/script>';
+  // Script gắn thêm vào cuối trang đã vẽ. Khuôn tự lo cập nhật (window.GOLD_TU_CAP_NHAT: nút ↻ + tự tải lại khi có số mới,
+  // 22/11/2026) thì chỉ còn phần đăng xuất. Khuôn cũ: 5 phút xem có số mới không (báo nút "tải lại"); rời trang hơn 10 phút
+  // rồi quay lại thì tự tải lại.
+  const theo = '<script>(()=>{const IV=' + JSON.stringify(enc.iv) + ';let roi=0;' +
+    'const moi=()=>{if(document.getElementById("gold-moi"))return;const b=document.createElement("button");b.id="gold-moi";' +
+    'b.type="button";b.textContent="Có số mới · Bấm để tải lại";b.style.cssText="position:fixed;left:50%;transform:translateX(-50%);' +
+    'bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:2147483647;padding:10px 18px;border-radius:999px;border:0;' +
+    'background:#1b211c;color:#fff;font:600 14px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.3);cursor:pointer";' +
+    'b.onclick=()=>location.reload();document.body.appendChild(b);};' +
+    'if(!window.GOLD_TU_CAP_NHAT){' +
+    'setInterval(async()=>{try{const r=await fetch("du-lieu.enc",{cache:"no-store"});const e=await r.json();if(e.iv!==IV)moi();}catch(x){}},300000);' +
+    'document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")roi=Date.now();' +
+    'else if(roi&&Date.now()-roi>600000)location.reload();});}' +
+    'window.addEventListener("hashchange",()=>{if(location.hash==="#dang-xuat"){try{localStorage.removeItem("' + KHOA + '")}catch(x){}' +
+    'location.replace(location.pathname);}});})();<' + '/script>';
+
+  const ve = async (json) => {
+    const r = await fetch('giao-dien.html', { cache: 'no-store' });
+    if (!r.ok) throw new Error('giao-dien ' + r.status);
+    let html = await r.text();
+    // Chèn số vào khuôn như một đoạn JS: chặn "</script", "<!--" và 2 ký tự xuống dòng U+2028/U+2029 làm vỡ trang.
+    const an = json.replace(/<\//g, '<\\/').replace(/<!--/g, '<\\!--')
+      .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    html = html.replace('/*__DU_LIEU__*/null', () => an);
+    html = /<head(\s[^>]*)?>/i.test(html) ? html.replace(/<head(\s[^>]*)?>/i, (m) => m + ban) : ban + html;
+    html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, () => theo + '</body>') : html + theo;
+    document.open(); document.write(html); document.close();
+  };
+
+  const luu = doc(KHOA);
+  if (luu) {
+    try {
+      const o = JSON.parse(luu);
+      if (o && o.muoi === enc.muoi && o.vong === enc.vong) {
+        const key = await crypto.subtle.importKey('raw', b64(o.k), 'AES-GCM', false, ['decrypt']);
+        const json = await giaiMa(key);
+        await ve(json);
+        return;
+      }
+    } catch (e) { /* khoá cũ hỏng hoặc đã đổi mật khẩu: đăng nhập lại */ }
+    ghi(KHOA, null);
+  }
+
+  hienCong();
+  $('ten').focus();
+  $('form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const nut = $('nut');
+    nut.disabled = true; nut.textContent = 'Đang mở…'; loi('');
+    let json;
+    try {
+      const base = await crypto.subtle.importKey('raw', new TextEncoder().encode($('ten').value.trim() + ':' + $('mk').value),
+        'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(enc.muoi), iterations: enc.vong, hash: 'SHA-256' },
+        base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+      json = await giaiMa(key);
+      ghi(KHOA, JSON.stringify({ muoi: enc.muoi, vong: enc.vong, k: raB64(await crypto.subtle.exportKey('raw', key)) }));
+    } catch (e) {
+      loi('Sai tên đăng nhập hoặc mật khẩu.'); nut.disabled = false; nut.textContent = 'Mở'; return;
+    }
+    try { await ve(json); } catch (e) { loi('Mở được số liệu nhưng không tải được giao diện. Tải lại trang thử.'); nut.disabled = false; nut.textContent = 'Mở'; }
+  });
+})();
+</script>
+</body>
+</html>

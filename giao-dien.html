@@ -1,0 +1,1778 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>Games · C-Lab</title>
+<script>try{var t=localStorage.getItem('xg-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&display=swap">
+<style>
+/* ===== Mẫu C · "Bảng điểm xưởng" — tokens ===== */
+:root{
+  color-scheme:light;
+  --bg:#F3F4F7; --surface:#FFFFFF; --surface-2:#F7F8FA; --surface-3:#ECEEF2;
+  --line:#E3E6EC; --line-2:#CDD2DB; --rule:#11131A;
+  --ink:#11131A; --ink-2:#474D5C; --ink-3:#646A7A;
+  --accent:#C8146A; --accent-mark:#C8146A; --accent-ink:#FFFFFF;
+  --accent-soft:#FCE6F0; --accent-track:#F6D3E3; --accent-line:#EBA3C4;
+  --marquee:#14151C; --cab-h:#14151C; --marquee-ink:#F5F6FA; --marquee-ink-2:#A9AEBD; --marquee-line:#2A2D38; --marquee-accent:#FF5CA8;
+  --good:#1F9D55; --good-ink:#126B36; --good-bg:#E2F3E8;
+  --warn:#D99100; --warn-ink:#8A5300; --warn-bg:#FFF0D4;
+  --bad:#D93A2B;  --bad-ink:#B3261E;  --bad-bg:#FCE7E4;
+  --none:#8E94A3; --none-ink:#4B5161; --none-bg:#ECEEF2;
+  --gl:#E9EBF0; --axis:#C3C8D2; --mark-muted:#8A90A0; --mark-2:#11131A;
+  --shadow:0 1px 2px rgba(17,19,26,.05),0 8px 22px -14px rgba(17,19,26,.25);
+  --focus:#C8146A;
+  --font:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --display:"Chakra Petch","Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:14px;
+  --navh:50px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0C0D12; --surface:#161821; --surface-2:#1C1F2A; --surface-3:#242836;
+    --line:#272B38; --line-2:#3A3F4F; --rule:#3A3F4F;
+    --ink:#EEF0F6; --ink-2:#B7BCCB; --ink-3:#8D93A5;
+    --accent:#FF5CA8; --accent-mark:#E83E8F; --accent-ink:#0C0D12;
+    --accent-soft:#2E1424; --accent-track:#3B1A2E; --accent-line:#6B2A4C;
+    --marquee:#13141C; --cab-h:#252A3A; --marquee-ink:#F5F6FA; --marquee-ink-2:#A9AEBD; --marquee-line:#272B38; --marquee-accent:#FF5CA8;
+    --good:#2FBF6A; --good-ink:#7BD9A0; --good-bg:#12281C;
+    --warn:#E5A823; --warn-ink:#F2C462; --warn-bg:#2C2410;
+    --bad:#F0574A;  --bad-ink:#FF8E84;  --bad-bg:#36191A;
+    --none:#7D8292; --none-ink:#B7BCCB; --none-bg:#20232D;
+    --gl:#232735; --axis:#3A3F4F; --mark-muted:#666C7D; --mark-2:#EEF0F6;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -16px rgba(0,0,0,.75);
+    --focus:#FF5CA8;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0C0D12; --surface:#161821; --surface-2:#1C1F2A; --surface-3:#242836;
+  --line:#272B38; --line-2:#3A3F4F; --rule:#3A3F4F;
+  --ink:#EEF0F6; --ink-2:#B7BCCB; --ink-3:#8D93A5;
+  --accent:#FF5CA8; --accent-mark:#E83E8F; --accent-ink:#0C0D12;
+  --accent-soft:#2E1424; --accent-track:#3B1A2E; --accent-line:#6B2A4C;
+  --marquee:#13141C; --cab-h:#252A3A; --marquee-ink:#F5F6FA; --marquee-ink-2:#A9AEBD; --marquee-line:#272B38; --marquee-accent:#FF5CA8;
+  --good:#2FBF6A; --good-ink:#7BD9A0; --good-bg:#12281C;
+  --warn:#E5A823; --warn-ink:#F2C462; --warn-bg:#2C2410;
+  --bad:#F0574A;  --bad-ink:#FF8E84;  --bad-bg:#36191A;
+  --none:#7D8292; --none-ink:#B7BCCB; --none-bg:#20232D;
+  --gl:#232735; --axis:#3A3F4F; --mark-muted:#666C7D; --mark-2:#EEF0F6;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -16px rgba(0,0,0,.75);
+  --focus:#FF5CA8;
+}
+
+/* ===== base ===== */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:calc(var(--navh) + 12px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+h1,h2,h3,p,ol,ul,dl,dd,figure{margin:0}
+ol,ul{padding:0;list-style:none}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit}
+a{color:var(--accent);text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+[tabindex="-1"]:focus:not(:focus-visible){outline:none}
+.tnum{font-variant-numeric:tabular-nums}
+.ic{width:18px;height:18px;flex:none}
+.ic.s{width:15px;height:15px}
+.wrap{width:100%;max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:1024px){.wrap{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}}
+.skip{position:absolute;left:-9999px;top:8px;z-index:60;background:var(--ink);color:var(--surface);padding:8px 12px;border-radius:8px;text-decoration:none}
+.skip:focus{left:8px}
+.na{color:var(--ink-3)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ===== header ===== */
+.top{background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.top-in{display:flex;flex-wrap:wrap;align-items:center;gap:5px 14px;padding-top:10px;padding-bottom:8px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.logo{width:36px;height:36px;flex:none}
+.brand-name{font:700 20px/1.05 var(--display);letter-spacing:.01em}
+.brand-sub{font-size:12px;color:var(--ink-3);margin-top:2px}
+.theme{order:2;flex:none;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 10px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);font-size:13px;cursor:pointer}
+.theme span{display:none}
+@media (min-width:720px){.theme span{display:inline}}
+/* nút ↻ cập nhật ngay (22/11/2026) + tin nổi báo đang lấy số */
+.reload{order:2;flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);cursor:pointer}
+@media (hover:hover){.reload:hover{color:var(--accent);border-color:var(--accent-line)}}
+.reload[aria-busy="true"]{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft);cursor:progress}
+.reload[aria-busy="true"] .ic,.lm-toast.dang .ic{animation:quay .9s linear infinite}
+@keyframes quay{to{transform:rotate(360deg)}}
+.lm-toast{position:fixed;z-index:45;left:50%;bottom:calc(66px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:max-content;max-width:min(460px,calc(100% - 32px));display:flex;align-items:flex-start;gap:10px;padding:11px 15px;border-radius:14px;border:1px solid var(--marquee-line);border-top:2px solid var(--marquee-accent);background:var(--marquee);color:var(--marquee-ink);box-shadow:0 10px 24px -10px rgba(0,0,0,.55);font-size:14px;line-height:1.45}
+.lm-toast.loi{border-top-color:var(--warn)}
+.lm-toast .ic{margin-top:1px;color:var(--marquee-accent)}
+.lm-toast .t2{color:var(--marquee-ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.meta{order:3;flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:1px 12px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+.meta b{color:var(--ink);font-weight:600}
+.meta .stale{color:var(--warn-ink);font-weight:600}
+.health{display:inline-flex;align-items:center;gap:7px;color:var(--ink-2);text-decoration:none}
+.health:hover{color:var(--ink)}
+.health .pd{width:8px;height:8px;border-radius:50%;background:var(--good);flex:none}
+.health.bad .pd{background:var(--bad);border-radius:1px;transform:rotate(45deg)}
+@media (min-width:900px){.meta{order:1;flex-basis:auto;flex-direction:column;align-items:flex-end;gap:1px}}
+
+/* ===== scoreboard band ===== */
+.board{position:relative;background:var(--marquee);color:var(--marquee-ink);border-top:3px solid var(--marquee-accent);border-bottom:1px solid var(--marquee-line);overflow:hidden}
+.board::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.4px);background-size:6px 6px;-webkit-mask-image:linear-gradient(100deg,#000 0%,transparent 62%);mask-image:linear-gradient(100deg,#000 0%,transparent 62%)}
+.score{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.cell{display:flex;flex-direction:column;gap:0;padding:8px 10px 9px 0;color:inherit;text-decoration:none;min-width:0}
+.cell:nth-child(even){padding-left:12px;border-left:1px solid var(--marquee-line)}
+.cell:nth-child(n+3){border-top:1px solid var(--marquee-line)}
+.cell .k{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--marquee-ink-2)}
+.cell .k::before{content:"";width:6px;height:6px;border-radius:1px;background:var(--marquee-accent);flex:none}
+.cell.na .k::before{background:var(--marquee-ink-2)}
+.cell .v{font:700 26px/1.1 var(--font);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.cell .v.na{font-size:16px;line-height:1.79;font-weight:600;color:var(--marquee-ink-2)}
+.cell .s{font-size:12px;line-height:1.35;color:var(--marquee-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell:not(:nth-child(5)) .s{white-space:normal}
+.cell:hover .k{color:var(--marquee-ink)}
+.cell:focus-visible{outline-color:var(--marquee-accent);outline-offset:-2px}
+.cell:nth-child(5){grid-column:1/-1;display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:baseline;gap:0 12px;padding-top:7px;padding-bottom:8px}
+.cell:nth-child(5) .v{font-size:22px}
+.cell:nth-child(5) .v.na{font-size:15px}
+@media (min-width:720px){
+  .score{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .cell,.cell:nth-child(even){padding:13px 16px 14px;border-left:1px solid var(--marquee-line);border-top:0}
+  .cell:nth-child(n+3){border-top:0}
+  .cell:first-child{padding-left:0;border-left:0}
+  .cell .v{font-size:30px}
+  .cell .v.na{font-size:17px;line-height:2.03}
+  .cell:nth-child(5){grid-column:auto;display:flex;padding-top:13px;padding-bottom:14px}
+  .cell:nth-child(5) .v{font-size:30px}
+  .cell:nth-child(5) .v.na{font-size:17px}
+}
+
+/* ===== sticky nav (luôn trong tầm tay) ===== */
+.nav{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top,0px);background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:saturate(1.5) blur(12px);backdrop-filter:saturate(1.5) blur(12px);border-bottom:1px solid var(--line);transition:box-shadow .2s}
+.nav.stuck{box-shadow:0 10px 18px -16px rgba(17,19,26,.55)}
+.chips{position:relative;display:flex;gap:6px;overflow-x:auto;max-width:1280px;margin:0 auto;padding:7px max(16px,env(safe-area-inset-right,0px)) 7px max(16px,env(safe-area-inset-left,0px));scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.chips::-webkit-scrollbar{display:none}
+.chips.fr{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent)}
+.chips.fl{-webkit-mask-image:linear-gradient(90deg,transparent,#000 34px);mask-image:linear-gradient(90deg,transparent,#000 34px)}
+.chips.fl.fr{-webkit-mask-image:linear-gradient(90deg,transparent,#000 34px,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,transparent,#000 34px,#000 calc(100% - 34px),transparent)}
+@media (min-width:1024px){.chips{padding:9px max(32px,env(safe-area-inset-right,0px)) 9px max(32px,env(safe-area-inset-left,0px))}}
+.chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;transition:background-color .15s,color .15s,border-color .15s}
+.chip:hover{border-color:var(--line-2);color:var(--ink)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+.chip[aria-current="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip.chip-task{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.chip.chip-task[aria-current="true"],.chip.chip-task.on{box-shadow:0 0 0 2px var(--accent-soft)}
+.totop{position:fixed;z-index:40;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px 0 11px;border-radius:999px;border:1px solid var(--marquee-line);border-top:2px solid var(--marquee-accent);background:var(--marquee);color:var(--marquee-ink);font:600 13.5px/1 var(--font);box-shadow:0 10px 24px -10px rgba(0,0,0,.55);cursor:pointer;opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .18s,transform .18s,visibility 0s linear .18s}
+.totop .ic{color:var(--marquee-accent)}
+.totop.show{opacity:1;visibility:visible;transform:none;transition:opacity .18s,transform .18s,visibility 0s}
+.totop:focus-visible{outline-color:var(--marquee-accent)}
+body:has(#gold-moi) .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+#gold-moi{white-space:nowrap}
+
+/* ===== layout ===== */
+.main{padding-top:16px;padding-bottom:44px}
+.topgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-bottom:30px;align-items:start}
+@media (min-width:1100px){.topgrid.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.topgrid.calm-row{grid-template-columns:auto minmax(0,1fr);align-items:center}}
+.secs{display:grid;grid-template-columns:minmax(0,1fr);gap:32px}
+@media (min-width:1100px){
+  .secs{grid-template-columns:repeat(12,minmax(0,1fr));gap:40px 40px}
+  #tong{grid-column:span 5} #trang{grid-column:span 7}
+  #khach{grid-column:span 6} #co-hoi{grid-column:span 6}
+  #dang-lam,#game{grid-column:1/-1}
+  #chi-phi{grid-column:span 7} #nguon{grid-column:span 5}
+}
+.sec{min-width:0;scroll-margin-top:calc(var(--navh) + 12px)}
+.sec-h{display:flex;align-items:baseline;gap:10px;padding-top:10px;border-top:2px solid var(--rule)}
+.sec-h .n{flex:none;font:700 13px/1 var(--display);letter-spacing:.08em;color:var(--accent)}
+.sec-h h2{font:700 20px/1.25 var(--display);letter-spacing:.003em;text-wrap:balance}
+@media (min-width:720px){.sec-h h2{font-size:22px}}
+.ans{margin-top:6px;font-size:16px;line-height:1.5;text-wrap:pretty;overflow-wrap:anywhere}
+.ans b{font-weight:700}
+.src{margin-top:10px;font-size:11.5px;line-height:1.45;color:var(--ink-3);overflow-wrap:anywhere}
+.blk{margin-top:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;--seg-gap:var(--surface)}
+.sub-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;font:600 14.5px/1.35 var(--font);margin-bottom:8px}
+.sub-h small{font-weight:400;font-size:12.5px;color:var(--ink-3)}
+.sub-h .legend{margin:0 0 0 auto}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+@media (min-width:1100px){.two-col{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start;gap:0 40px}}
+.note{margin-top:8px;font-size:13px;line-height:1.5;color:var(--ink-2);overflow-wrap:anywhere}
+
+/* ===== xem thêm (bấm xổ xuống) ===== */
+details.dd{margin-top:12px}
+details.dd>summary{display:block;border:1px solid var(--line);border-radius:11px;background:var(--surface);cursor:pointer;list-style:none;font-size:14px;font-weight:600;color:var(--ink);-webkit-tap-highlight-color:transparent}
+details.dd>summary::-webkit-details-marker{display:none}
+details.dd>summary::marker{content:""}
+details.dd>summary:hover{border-color:var(--line-2)}
+details.dd>summary:focus-visible{outline-offset:1px}
+.sum{display:flex;align-items:center;gap:6px 8px;min-height:40px;padding:8px 12px}
+.sum>span:not(.sm){flex:none;white-space:nowrap}
+.sum .sm{flex:0 1 auto;font-weight:400;font-size:12.5px;color:var(--ink-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sum>.ic{margin-left:auto;color:var(--ink-3);transition:transform .18s}
+details.dd[open]>summary{border-radius:11px 11px 0 0;border-bottom-color:var(--line)}
+details.dd[open]>summary .sum>.ic{transform:rotate(180deg);color:var(--accent)}
+.sum .pd{flex:none;width:8px;height:8px;border-radius:50%;background:var(--good)}
+details.dd.has-bad .sum .pd{border-radius:1px;transform:rotate(45deg);background:var(--bad)}
+.dd-b{border:1px solid var(--line);border-top:0;border-radius:0 0 11px 11px;background:var(--surface);padding:12px;--seg-gap:var(--surface)}
+.dd-b.flush{padding:0}
+
+/* ===== pills ===== */
+.pill{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-width:0;padding:3px 9px 3px 8px;border-radius:999px;font-size:12.5px;font-weight:500;line-height:1.4;background:var(--none-bg);color:var(--none-ink);white-space:normal;vertical-align:middle}
+.pill .pd{flex:none;width:8px;height:8px;border-radius:50%;background:transparent;border:2px solid var(--none)}
+.pill .pt{min-width:0}
+.pill.good{background:var(--good-bg);color:var(--good-ink)}
+.pill.good .pd{background:var(--good);border-color:var(--good)}
+.pill.vua .pd{background:transparent}
+.pill.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.pill.warn .pd{border-color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.pill.bad .pd{width:7px;height:7px;border:0;border-radius:1px;background:var(--bad);transform:rotate(45deg)}
+.pill.low .pd{border-radius:1px}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.pill.acc .pd{background:var(--accent);border-color:var(--accent)}
+.xtra{font-size:12.5px;color:var(--ink-3)}
+.nw{white-space:nowrap}
+
+/* ===== segmented progress ("thanh chạy" 20 ô) ===== */
+.seg{position:relative;height:10px;border-radius:3px;background:var(--accent-track);overflow:hidden}
+.seg>i{position:absolute;left:0;top:0;bottom:0;background-color:var(--accent-mark)}
+.seg::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(5% - 2px),var(--seg-gap,var(--surface)) calc(5% - 2px),var(--seg-gap,var(--surface)) 5%)}
+.seg.big{height:14px;border-radius:4px}
+.seg.done{background:var(--good-bg)}
+.seg.done>i{background-color:var(--good)}
+.seg.stall>i{background-color:var(--warn)}
+@media (prefers-reduced-motion:no-preference){
+  .seg.run>i{background-image:linear-gradient(90deg,transparent 0,rgba(255,255,255,.38) 50%,transparent 100%);background-size:70px 100%;background-repeat:no-repeat;animation:shim 1.7s linear infinite}
+  @keyframes shim{from{background-position:-70px 0}to{background-position:calc(100% + 70px) 0}}
+}
+
+/* ===== covers ===== */
+.cv{flex:none;object-fit:cover;background:var(--surface-3);outline:1px solid rgba(127,127,127,.18);outline-offset:-1px}
+.cv-ph{display:grid;place-items:center;font:700 15px/1 var(--display);color:var(--ink-3);background:var(--surface-3)}
+
+/* ===== top: việc của bạn + đợt làm game ===== */
+.tasks{background:var(--surface);border:2px solid var(--accent);border-radius:var(--r);padding:12px 14px 4px;box-shadow:var(--shadow);scroll-margin-top:calc(var(--navh) + 12px);overflow-wrap:anywhere}
+.tasks-h{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+.badge{display:grid;place-items:center;min-width:28px;height:28px;padding:0 8px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font:700 15px/1 var(--display)}
+.tasks-h h2{font:700 19px/1.2 var(--display)}
+/* 24/11/2026 chủ dự án: "dừng có chiếm diện tích, thu gọn lại, tôi muốn thì tự bấm xổ xuống": mỗi việc 1 dòng
+   (số · việc · game · mũi tên), bấm mới hiện cách làm + nút; mở việc này thì việc kia tự gập (details name="viec") */
+.task{border-top:1px solid var(--line)}
+.task-s{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:11px;align-items:start;padding:11px 0}
+summary.task-s{cursor:pointer;list-style:none;border-radius:8px;-webkit-tap-highlight-color:transparent}
+summary.task-s::-webkit-details-marker{display:none}
+summary.task-s::marker{content:""}
+summary.task-s:focus-visible{outline-offset:2px}
+.task-s>.ic{align-self:center;color:var(--ink-3);transition:transform .18s}
+@media (hover:hover){summary.task-s:hover>.ic{color:var(--accent)}}
+.task[open]>.task-s>.ic{transform:rotate(180deg);color:var(--accent)}
+.task .no{width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font:700 14px/26px var(--display);text-align:center}
+.task-h{display:block;min-width:0}
+.task-t{display:block;font-weight:700;font-size:15.5px;line-height:1.35}
+.task-g{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:14px;font-weight:600}
+.task-g .cv{width:26px;height:26px;border-radius:7px}
+.task-b{padding:0 0 8px 37px}
+.task-d{font-size:14px;line-height:1.55;color:var(--ink-2)}
+.task-acts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.task-go{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 18px;border:1.5px solid var(--accent);border-radius:999px;background:var(--surface);color:var(--accent);font:700 15px/1 var(--font);text-decoration:none}
+.task-go .ic{width:14px;height:14px}
+.task-go:hover{background:var(--accent-soft)}
+.calm{justify-self:start;display:inline-flex;align-items:center;gap:9px;padding:9px 15px 9px 12px;border-radius:12px;background:var(--good-bg);color:var(--good-ink);font-size:14.5px;font-weight:500}
+.batch{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px 12px;box-shadow:var(--shadow);--seg-gap:var(--surface)}
+.b-h{display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap}
+.b-t{font:700 16px/1.2 var(--display);letter-spacing:.01em}
+.b-when{font-size:12.5px;color:var(--ink-3)}
+.b-h .pill{margin-left:auto}
+.b-main{display:flex;align-items:center;gap:12px;margin-top:9px}
+.b-pt{flex:none;min-width:58px;font:700 24px/1 var(--font);font-variant-numeric:tabular-nums}
+.b-main .seg{flex:1}
+.b-s{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin-top:8px;font-size:14px;color:var(--ink-2)}
+.b-s b{color:var(--ink)}
+.b-link{display:inline-flex;align-items:center;gap:3px;font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap}
+@media (max-width:599px){.batch.done .b-main{display:none}.batch.done .b-s{margin-top:5px}}
+.runs{display:grid;gap:10px}
+.run{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:center}
+.run .cv{width:32px;height:32px;border-radius:8px}
+.run-top{display:flex;align-items:baseline;gap:8px}
+.run-name{flex:1;min-width:0;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.run-pt{font-weight:600;font-size:13px}
+.run .seg{margin-top:4px;height:8px}
+.run-step{margin-top:3px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;font-size:12.5px;color:var(--ink-3)}
+
+/* ===== 01 bản đồ chặng ===== */
+.path{display:grid;gap:3px}
+.st{position:relative;display:grid;grid-template-columns:26px 9em minmax(0,1fr) auto;align-items:center;gap:10px;height:30px;font-size:14.5px}
+.st::before{content:"";position:absolute;left:12px;top:28px;height:7px;width:2px;background:var(--line-2)}
+.st:last-child::before{display:none}
+.st.on::before{background:var(--accent-line)}
+.node{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font:700 13px/1 var(--display);background:var(--surface);border:2px solid var(--line-2);color:var(--ink-3)}
+.st.on .node{background:var(--accent-mark);border-color:var(--accent-mark);color:var(--accent-ink)}
+.st.unk .node{border-style:dashed}
+.st-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-bar{height:8px;border-radius:0 4px 4px 0;background:var(--surface-3);overflow:hidden}
+.st-bar>i{display:block;height:100%;background:var(--accent-mark);border-radius:0 4px 4px 0}
+.st-v{font:700 18px/1 var(--font);font-variant-numeric:tabular-nums;text-align:right;min-width:2ch}
+.st-v.na{font:500 13px/1.2 var(--font);color:var(--ink-3)}
+
+/* ===== 02 tủ nền tảng ===== */
+.cabs{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:339px){.cabs{grid-template-columns:minmax(0,1fr)}}
+.cab{display:flex;flex-direction:column;text-align:left;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;cursor:pointer;box-shadow:var(--shadow);min-width:0;-webkit-tap-highlight-color:transparent}
+.cab:disabled{cursor:default;box-shadow:none;color:inherit}
+.cab:not(:disabled):hover{border-color:var(--line-2)}
+.cab[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.cab-h{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 10px 6px 11px;background:var(--cab-h);color:var(--marquee-ink)}
+.lt{flex:none;width:8px;height:8px;border-radius:50%;background:var(--none);box-shadow:0 0 0 3px rgba(255,255,255,.09)}
+.lt.good{background:var(--good)}.lt.warn{background:var(--warn)}.lt.bad{background:var(--bad)}
+.cab-t{display:flex;flex-direction:column;min-width:0}
+.cab-name{font:700 14px/1.15 var(--display);letter-spacing:.02em}
+.cab-tag{font-size:11.5px;line-height:1.25;color:var(--marquee-ink-2)}
+.cab-h .go{margin-left:auto;color:var(--marquee-ink-2)}
+.cab:not(:disabled):hover .go{color:var(--marquee-accent)}
+.cab-b{display:flex;flex-direction:column;gap:7px;padding:9px 10px 10px;flex:1;container-type:inline-size}
+.cab-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.cab-n{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 6px}
+.cab-n b{font:700 24px/1.1 var(--font);font-variant-numeric:tabular-nums}
+.cab-n span{font-size:13px;color:var(--ink-2)}
+.cab-st{display:flex;flex-wrap:wrap;gap:4px}
+.cab-st .pill{font-size:11.5px;padding:2px 7px 2px 6px;gap:5px}
+.cab-st .pill .pd{width:7px;height:7px}
+.cab-d{font-size:12px;color:var(--ink-3)}
+.covers{display:flex;align-items:center;gap:5px;overflow:hidden;padding:2px}
+.covers .cv{width:28px;height:28px;border-radius:7px}
+.covers .cv.warn{box-shadow:0 0 0 2px var(--warn)}
+.covers .cv.bad{box-shadow:0 0 0 2px var(--bad)}
+.covers .more{flex:none;display:grid;place-items:center;min-width:28px;height:28px;padding:0 5px;border-radius:7px;background:var(--surface-3);font-size:11px;font-weight:600;color:var(--ink-2)}
+@container (max-width:300px){
+  .covers{gap:0}
+  .covers .cv{box-shadow:0 0 0 2px var(--surface)}
+  .covers .cv+.cv,.covers .more{margin-left:-14px}
+  .covers .more{box-shadow:0 0 0 2px var(--surface)}
+  .covers .cv.warn{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--warn)}
+  .covers .cv.bad{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--bad)}
+}
+@media (min-width:600px){.cab-t{flex-direction:row;align-items:baseline;gap:7px}}
+.soon{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.soon .lb{font-size:12.5px;color:var(--ink-3);margin-right:2px}
+.soon .s{padding:4px 8px;border:1.5px dashed var(--line-2);border-radius:8px;font:600 12px/1 var(--display);letter-spacing:.02em;color:var(--ink-3)}
+
+/* ===== 03 ô số + biểu đồ ===== */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line)}
+.tile{min-width:0;padding:9px 12px 10px 0;border-bottom:1px solid var(--line)}
+.tile.r{padding-left:13px;padding-right:0;border-left:1px solid var(--line)}
+.tile.wide{grid-column:1/-1;padding-right:0;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:0 12px}
+.tile.wide .t-k{grid-column:1/-1}
+.t-k{font-size:12.5px;font-weight:500;color:var(--ink-2)}
+.t-v{margin-top:1px;font:700 24px/1.15 var(--font);font-variant-numeric:tabular-nums}
+.t-v small{margin-left:3px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.t-v.na{font:600 15px/1.84 var(--font);color:var(--ink-3)}
+.t-s{margin-top:1px;font-size:12px;line-height:1.4;color:var(--ink-3)}
+.tile.wide .t-s{margin-top:0}
+@media (min-width:600px){
+  .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .tile,.tile.r{padding:9px 12px 10px;border-left:1px solid var(--line)}
+  .tile:nth-child(2){padding-left:0;border-left:0}
+  .tile.wide{padding-left:0;border-left:0}
+}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:6px;font-size:12px;color:var(--ink-2)}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.sw-bar{width:16px;height:9px;border-radius:0 3px 3px 0;background:var(--accent-mark)}
+.sw-dot{width:9px;height:9px;border-radius:50%;background:var(--mark-2)}
+.sw-col{width:9px;height:12px;border-radius:3px 3px 0 0;background:var(--mark-muted)}
+.sw-col.em{background:var(--accent-mark)}
+.chartbox{width:100%;min-width:0}
+.chart{display:block;overflow:visible}
+.chart .gl{stroke:var(--gl);stroke-width:1;shape-rendering:crispEdges}
+.chart .ax{stroke:var(--axis);stroke-width:1;shape-rendering:crispEdges}
+.chart .tick{font:500 11.5px var(--font);fill:var(--ink-3);font-variant-numeric:tabular-nums}
+.chart .tick.em{fill:var(--ink);font-weight:700}
+.chart .lbl{font:500 13px var(--font);fill:var(--ink-2)}
+.chart .val{font:600 12.5px var(--font);fill:var(--ink);font-variant-numeric:tabular-nums}
+.chart .val .v2{font-weight:500;fill:var(--ink-3)}
+.chart .bar{fill:var(--accent-mark)}
+.chart .dot{fill:var(--mark-2);stroke:var(--surface);stroke-width:2}
+.chart .col{fill:var(--mark-muted)}
+.chart .col.em{fill:var(--accent-mark)}
+.chart .hit{fill:transparent}
+.chart .row:hover .hit{fill:var(--surface-2)}
+
+/* ===== 04 cơ hội ===== */
+.cands{display:grid;gap:9px}
+.cand{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center}
+.cand .cv{width:34px;height:34px;border-radius:9px}
+.c-top{display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+.c-name{flex:1;min-width:0;font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-need{font-size:12.5px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.meter{position:relative;margin-top:5px;height:6px;border-radius:3px;background:var(--accent-track);overflow:hidden}
+.meter>i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent-mark)}
+.c-s{margin-top:3px;font-size:12.5px;color:var(--ink-3)}
+.c-next{margin-top:2px;font-size:13px;color:var(--ink-2)}
+.linkbtn{margin-top:10px;border:0;background:none;padding:0;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+.sub-row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;margin-bottom:8px}
+.sub-row .sub-h{margin-bottom:0}
+.sub-row .linkbtn{margin-top:0;font-size:13.5px}
+.rule-l{display:grid;gap:6px;counter-reset:r}
+.rule-l li{position:relative;padding-left:24px;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.rule-l li b{color:var(--ink)}
+.rule-l li::before{counter-increment:r;content:counter(r);position:absolute;left:0;top:2px;width:17px;height:17px;border-radius:5px;background:var(--surface-3);color:var(--ink-2);font:700 11px/17px var(--display);text-align:center}
+
+/* ===== 06 danh sách game: mỗi game 1 dòng gọn ===== */
+.ctl{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;margin-top:12px}
+@media (min-width:1100px){.ctl{grid-template-columns:minmax(240px,320px) minmax(0,1fr);align-items:center;gap:10px 14px}.ctl-bot{grid-column:1/-1}}
+.search{position:relative;display:block}
+.search .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.search input{width:100%;height:44px;padding:0 14px 0 40px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:400 16px var(--font);-webkit-appearance:none;appearance:none}
+.search input::placeholder{color:var(--ink-3)}
+.ctl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.fchip{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 11px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap}
+.fchip .c{font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.fchip.zero{border-color:var(--line);color:var(--ink-3)}
+.fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.fchip[aria-pressed="true"] .c{color:inherit;opacity:.72}
+.ctl-bot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.sortg{display:inline-flex;gap:2px;padding:3px;border-radius:12px;background:var(--surface-3)}
+.sortg button{height:28px;padding:0 11px;border:0;border-radius:9px;background:transparent;color:var(--ink-2);font-size:13px;font-weight:500;cursor:pointer}
+.sortg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.ctl-state{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:12.5px;color:var(--ink-3)}
+.ptag{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px 0 11px;border:0;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
+.glists{margin-top:2px}
+.gday{display:flex;align-items:baseline;gap:8px;padding:12px 6px 6px;border-bottom:1px solid var(--line-2);font:400 12.5px/1.3 var(--font);color:var(--ink-3)}
+.gday b{font:700 16px/1 var(--display);color:var(--ink);letter-spacing:.02em}
+.gday .c{margin-left:auto;font-variant-numeric:tabular-nums}
+.glist{display:grid;grid-template-columns:minmax(0,1fr)}
+.grow{position:relative;min-width:0;border-bottom:1px solid var(--line);border-radius:0}
+.grow.open{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);border-bottom-color:transparent;z-index:1}
+/* one row = cover · name (+ plays on phones) / state · chances; "Chơi" and the chevron share the row's middle line */
+.g-head{position:relative;--playw:84px}
+.g-btn{display:grid;grid-template-columns:40px minmax(0,1fr) 14px;grid-template-areas:"cv l1 ch" "cv l2 ch";column-gap:9px;row-gap:3px;align-items:center;width:100%;min-height:56px;margin:0;padding:7px 6px;border:0;border-radius:12px;background:transparent;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+@media (min-width:600px){.has-play .g-btn{grid-template-columns:40px minmax(0,1fr) var(--playw) 14px;grid-template-areas:"cv l1 . ch" "cv l2 . ch"}}
+@media (hover:hover){.g-head:hover .g-btn{background:var(--surface-2)}.grow.open .g-head:hover .g-btn{background:transparent}}
+.g-btn:focus-visible{outline-offset:-2px}
+.g-btn .cv{grid-area:cv;width:40px;height:40px;border-radius:10px}
+.g-l1{grid-area:l1;display:flex;align-items:baseline;gap:8px;min-width:0;align-self:end;white-space:nowrap;line-height:1.25}
+.g-name{flex:0 1 auto;min-width:0;font:600 15px/1.25 var(--font);overflow:hidden;text-overflow:ellipsis}
+.g-vi{display:none;flex:0 100 auto;min-width:0;font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis}
+.grow.open .g-l1{white-space:normal}
+.g-l2{grid-area:l2;display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;white-space:nowrap;align-self:start;line-height:1.3}
+.g-l2 .sl{display:flex;align-items:center;min-width:0;flex:none}
+.g-l2 .s3{flex:0 1 auto}
+.g-l2 .s2{display:none}
+.g-l2 .pill{font-size:12px;padding:1px 8px 1px 7px;gap:5px;white-space:nowrap}
+.g-l2 .pill.flat{background:transparent;padding-left:0;padding-right:0;color:var(--ink-2)}
+.g-l2 .pill .pd{width:7px;height:7px}
+.g-l2 .pill .pt{overflow:hidden;text-overflow:ellipsis}
+.g-op{min-width:0;font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis}
+.g-pl{flex:none;font-size:12px;line-height:1.25;color:var(--ink-3)}
+.pl-a{margin-left:auto}
+.g-pl b{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.g-ch{grid-area:ch;width:14px;height:14px;color:var(--ink-3);transition:transform .18s}
+.g-btn[aria-expanded="true"] .g-ch{transform:rotate(180deg);color:var(--accent)}
+@media (min-width:600px){
+  .pl-a{display:none}
+  .g-vi{display:block}
+  .g-l2 .s1{flex:0 0 170px}
+  .g-l2 .s2{display:flex;flex:0 0 98px}
+  .g-pl{color:var(--ink-2)}
+}
+/* wide screens: one line per game, columns line up like a table */
+@media (min-width:900px){
+  .g-btn,.has-play .g-btn{grid-template-columns:40px minmax(0,1fr) 172px 112px 128px var(--playw) 14px;grid-template-areas:"cv l1 s1 s2 s3 . ch";row-gap:0;min-height:54px}
+  .g-l1{align-self:center}
+  .g-l2{display:contents}
+  .g-l2 .s1{grid-area:s1}.g-l2 .s2{grid-area:s2}.g-l2 .s3{grid-area:s3}
+  .g-l2 .sl{overflow:hidden}
+}
+/* "Chơi" sits on the row from tablet width up; on phones it lives in the opened view ("Các trang") so names get the full line */
+.play{position:absolute;top:50%;right:29px;z-index:1;transform:translateY(-50%);display:none;align-items:center;justify-content:center;gap:3px;width:var(--playw);height:30px;padding:0 2px 0 4px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:13px;font-weight:600;text-decoration:none}
+@media (min-width:600px){.play{display:inline-flex}}
+.play .ic{width:12px;height:12px;color:var(--accent)}
+.play::after{content:"";position:absolute;inset:-8px -4px}
+.play:hover{border-color:var(--accent);color:var(--accent)}
+.pl-go{display:inline-flex;align-items:center;gap:2px;padding:2px 0;color:var(--accent);font-size:13.5px;font-weight:600;text-decoration:none}
+.pl-go .ic{width:12px;height:12px}
+.pl-go:hover{text-decoration:underline}
+button.play{font-family:var(--font);cursor:pointer}
+/* "Chơi thử" in the opened view (the only way on phones, where the row has no room for it) */
+.g-try{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:2px 0 12px}
+.try-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px 0 16px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:700 15px/1 var(--font);cursor:pointer}
+.try-btn .ic{width:15px;height:15px}
+.try-btn:hover{filter:brightness(1.08)}
+.try-n{flex:1 1 14rem;font-size:12.5px;line-height:1.4;color:var(--ink-3)}
+/* play-test overlay: the game fills the screen under a slim bar with a big "Đóng" */
+html.playing,html.playing body{overflow:hidden}
+.pv{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;background:#000}
+.pv-bar{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 8px 6px 14px;padding-top:calc(6px + env(safe-area-inset-top,0px));background:var(--marquee);color:var(--marquee-ink-2);font-size:14px}
+.pv-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-t b{color:var(--marquee-ink)}
+.pv-x{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:40px;padding:0 16px 0 12px;border:0;border-radius:999px;background:var(--marquee-accent);color:#14151C;font:700 14px/1 var(--font);cursor:pointer}
+.pv-x .ic{width:16px;height:16px}
+.pv-f{display:block;flex:1;width:100%;min-height:0;border:0;background:#000}
+.pv-msg{margin:auto;padding:24px;max-width:28rem;text-align:center;color:#F5F6FA;font-size:15px;line-height:1.5}
+.g-det{padding:0 6px 12px}
+@media (min-width:600px){.g-det{padding-left:55px;padding-right:12px}}
+.g-dl{display:grid;grid-template-columns:minmax(0,1fr);gap:11px 22px;padding:12px;border-radius:10px;background:var(--surface-2);font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+@media (min-width:600px){.g-dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1100px){.g-dl{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.kv{min-width:0}
+.kv.w{grid-column:1/-1}
+.kv dt{font-size:11.5px;font-weight:600;letter-spacing:.01em;color:var(--ink-3)}
+.kv dd{margin-top:2px;color:var(--ink);overflow-wrap:anywhere}
+.kv .sub{display:block;margin-top:2px;font-size:12.5px;color:var(--ink-3)}
+.kv .pl{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin:1px 0 3px}
+.kv dd .src{margin-top:0}
+.empty{padding:22px 8px;color:var(--ink-2)}
+.empty button{margin-left:6px;border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+.morebtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;max-width:420px;height:44px;margin:16px auto 0;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-weight:600;cursor:pointer}
+.morebtn .c{font-weight:400;color:var(--ink-3)}
+.morebtn:hover{border-color:var(--accent)}
+
+/* ===== 07 chi phí / 08 nguồn ===== */
+.tscroll{max-height:420px;overflow:auto;border-radius:0 0 11px 11px}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{position:sticky;top:0;background:var(--surface-2);font-weight:600;color:var(--ink-2);text-align:left}
+.tbl th,.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td.u,.tbl th.u{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl tr.day td{background:var(--surface-2);font-weight:600;font-variant-numeric:tabular-nums}
+.tbl tr.day td .c{font-weight:400;color:var(--ink-3)}
+.srcl li{padding:11px 12px;border-top:1px solid var(--line)}
+.srcl li:first-child{border-top:0}
+.s-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.s-top .sd{flex:none;width:8px;height:8px;border-radius:50%;background:var(--good)}
+.s-top .sd.bad{width:7px;height:7px;border-radius:1px;transform:rotate(45deg);background:var(--bad)}
+.s-name{font-weight:600;font-size:14px}
+.s-time{margin-top:1px;font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.s-note{margin-top:3px;font-size:13px;line-height:1.55;color:var(--ink-2);overflow-wrap:anywhere}
+.foot{border-top:1px solid var(--line);padding:14px 0 calc(58px + env(safe-area-inset-bottom,0px));font-size:12px;line-height:1.55;color:var(--ink-3)}
+@media (min-width:900px){.foot{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}}
+.nodata{padding:40px 0;font-size:17px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#tong">Tới phần số liệu</a>
+<header class="top" id="dau" tabindex="-1">
+  <div class="wrap top-in">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="1" y="1" width="38" height="38" rx="11" fill="var(--ink)"/>
+        <rect x="8" y="17" width="15" height="6" rx="1.6" fill="var(--accent-mark)"/>
+        <rect x="12.5" y="12.5" width="6" height="15" rx="1.6" fill="var(--accent-mark)"/>
+        <circle cx="28.5" cy="15.5" r="2.9" fill="var(--surface)"/>
+        <circle cx="28.5" cy="24.5" r="2.9" fill="var(--surface)" opacity=".55"/>
+      </svg>
+      <div>
+        <div class="brand-name">Xưởng game</div>
+        <div class="brand-sub">c-lab.support</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <button class="reload" type="button" id="lamMoiBtn" aria-busy="false" aria-label="Cập nhật số mới nhất ngay" title="Cập nhật số mới nhất ngay">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8M21 3v5h-5"/></svg>
+    </button>
+    <button class="theme" type="button" id="themeBtn" aria-label="Đổi giao diện sáng hoặc tối">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>
+      <span id="themeTxt">Tự động</span>
+    </button>
+  </div>
+</header>
+<section class="board" id="board" aria-label="Tóm tắt nhanh"><div class="wrap"><div class="score" id="score"></div></div></section>
+<nav class="nav" id="nav" aria-label="Đi tới mục"><div class="chips" id="chips"></div></nav>
+<main class="wrap main" id="main">
+  <div class="topgrid" id="topgrid"></div>
+  <div class="secs" id="secs">
+    <section class="sec" id="tong" aria-labelledby="h-tong"><header class="sec-h"><span class="n">01</span><h2 id="h-tong">Tổng bao nhiêu game?</h2></header><div id="b-tong"></div></section>
+    <section class="sec" id="trang" aria-labelledby="h-trang"><header class="sec-h"><span class="n">02</span><h2 id="h-trang">Đã đăng trang nào?</h2></header><div id="b-trang"></div></section>
+    <section class="sec" id="khach" aria-labelledby="h-khach"><header class="sec-h"><span class="n">03</span><h2 id="h-khach">Tiền và khách chơi thế nào?</h2></header><div id="b-khach"></div></section>
+    <section class="sec" id="co-hoi" aria-labelledby="h-co-hoi"><header class="sec-h"><span class="n">04</span><h2 id="h-co-hoi">Game nào có cơ hội, nhân ra nền tảng nào?</h2></header><div id="b-co-hoi"></div></section>
+    <section class="sec" id="dang-lam" aria-labelledby="h-dang-lam"><header class="sec-h"><span class="n">05</span><h2 id="h-dang-lam">Đang làm tới đâu?</h2></header><div id="b-dang-lam"></div></section>
+    <section class="sec" id="game" aria-labelledby="h-game"><header class="sec-h"><span class="n">06</span><h2 id="h-game">Từng game thế nào?</h2></header><div id="b-game"></div></section>
+    <section class="sec" id="chi-phi" aria-labelledby="h-chi-phi"><header class="sec-h"><span class="n">07</span><h2 id="h-chi-phi">Chi phí bao nhiêu?</h2></header><div id="b-chi-phi"></div></section>
+    <section class="sec" id="nguon" aria-labelledby="h-nguon"><header class="sec-h"><span class="n">08</span><h2 id="h-nguon">Số lấy từ đâu?</h2></header><div id="b-nguon"></div></section>
+  </div>
+  <noscript><p class="nodata">Trang này cần bật JavaScript để hiện số.</p></noscript>
+</main>
+<footer class="foot"><div class="wrap">Xưởng game · c-lab.support · trang riêng, không cho Google đọc. Số nào máy chưa đọc được thì ghi “chưa có số”, không đoán.</div></footer>
+<button class="totop" id="totop" type="button" aria-label="Lên đầu trang"><svg class="ic s" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Lên đầu</button>
+<script>
+const DATA = /*__DU_LIEU__*/null;
+// --> keep this line right under DATA: if a game name ever holds an HTML comment opener, the browser still ends this script here
+(() => {
+'use strict';
+const D = DATA && typeof DATA === 'object' ? DATA : null;
+// 23/11/2026: chấm theo mốc chính thức của Playgama (tools/bang_quan_ly.py): dưới NGUONG lượt chơi thật thì chưa chấm
+const NGUONG = 30, PAGE = 20;
+const reduceQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+const motion = () => (reduceQ.matches ? 'auto' : 'smooth');
+
+/* ---------- DOM helpers (data text always goes in as text nodes) ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+function add(e, kids) {
+  for (const c of kids) {
+    if (c == null || c === false || c === '') continue;
+    if (Array.isArray(c)) add(e, c);
+    else e.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return e;
+}
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const k of Object.keys(props)) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? '' : String(v));
+  }
+  return add(e, kids);
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, ...kids) {
+  const e = document.createElementNS(SVGNS, tag);
+  if (attrs) for (const k of Object.keys(attrs)) { const v = attrs[k]; if (v != null && v !== false) e.setAttribute(k, String(v)); }
+  return add(e, kids);
+}
+const B = t => h('b', null, t);
+const NA = t => h('span', { class: 'na' }, t);
+function icon(name, cls) {
+  const P = { arrow: 'M7 17L17 7M9 7h8v8', right: 'M9 6l6 6-6 6', search: 'M11 4a7 7 0 1 0 0 14a7 7 0 0 0 0-14zM20 20l-4.2-4.2', check: 'M5 12.5l4.2 4.2L19 7', x: 'M7 7l10 10M17 7L7 17', down: 'M6 9l6 6 6-6', play: 'M8 5.5v13l10.5-6.5z', reload: 'M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8M21 3v5h-5' };
+  return sv('svg', { viewBox: '0 0 24 24', class: cls || 'ic', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, sv('path', { d: P[name] }));
+}
+
+/* ---------- theme (works even without data) ---------- */
+function initTheme() {
+  const btn = $('#themeBtn'), txt = $('#themeTxt');
+  const NAMES = { auto: 'Tự động', light: 'Sáng', dark: 'Tối' }, ORDER = ['auto', 'light', 'dark'];
+  let cur = 'auto';
+  try { const t = localStorage.getItem('xg-theme'); if (t === 'light' || t === 'dark') cur = t; } catch (e) { /* storage blocked */ }
+  const apply = () => {
+    const r = document.documentElement;
+    if (cur === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', cur);
+    txt.textContent = NAMES[cur];
+    btn.setAttribute('aria-label', 'Giao diện: ' + NAMES[cur] + '. Bấm để đổi');
+  };
+  btn.addEventListener('click', () => { cur = ORDER[(ORDER.indexOf(cur) + 1) % 3]; try { localStorage.setItem('xg-theme', cur); } catch (e) { /* storage blocked */ } apply(); });
+  apply();
+}
+initTheme();
+
+/* ---------- numbers & time (Vietnam time, UTC+7) ---------- */
+const isNum = v => typeof v === 'number' && Number.isFinite(v);
+const NF0 = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+const NF1 = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+const NF2 = new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const n0 = v => isNum(v) ? NF0.format(v) : '–';
+const n1 = v => isNum(v) ? NF1.format(v) : '–';
+const usd = v => !isNum(v) ? '–' : (Math.abs(v) < 10 ? NF2.format(v) : NF0.format(v));
+const pad = n => String(n).padStart(2, '0');
+const tms = iso => { if (typeof iso !== 'string' || !iso) return null; const t = Date.parse(iso); return Number.isNaN(t) ? null : t; };
+function vn(t) { const d = new Date(t + 7 * 3600e3); return { H: pad(d.getUTCHours()), M: pad(d.getUTCMinutes()), d: pad(d.getUTCDate()), m: pad(d.getUTCMonth() + 1), key: d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) }; }
+function gio(iso) { const t = tms(iso); if (t == null) return null; const v = vn(t); return v.H + ':' + v.M + ' ' + v.d + '/' + v.m; }
+function gioNgan(iso) { const t = tms(iso); if (t == null) return null; const v = vn(t); return v.H + ':' + v.M; }
+function ago(iso) {
+  const t = tms(iso); if (t == null) return '';
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return 'vừa xong';
+  if (m < 60) return m + ' phút trước';
+  const hh = Math.floor(m / 60);
+  if (hh < 24) return (hh < 6 && m % 60) ? hh + ' giờ ' + (m % 60) + ' phút trước' : hh + ' giờ trước';
+  return Math.floor(hh / 24) + ' ngày trước';
+}
+const DAYRE = /^(\d{4})-(\d{2})-(\d{2})/;
+const dm = key => { const m = DAYRE.exec(key || ''); return m ? m[3] + '/' + m[2] : String(key || ''); };
+const THU = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+const thu = key => { const m = DAYRE.exec(key || ''); return m ? THU[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()] : ''; };
+function addDays(key, n) { const m = DAYRE.exec(key); const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + n)); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); }
+const clampPt = v => isNum(v) ? Math.max(0, Math.min(100, Math.round(v))) : 0;
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+const sum = a => a.reduce((s, v) => s + v, 0);
+
+/* ---------- empty state: no data injected ---------- */
+if (!D) {
+  $('#topgrid').append(h('p', { class: 'nodata' }, 'Chưa có số. Trang này chờ máy chèn dữ liệu (du-lieu.json) vào.'));
+  $('#secs').hidden = true; $('#nav').hidden = true; $('#board').hidden = true; $('#lamMoiBtn').hidden = true;
+  return;
+}
+
+/* ---------- sources: one short line per block (full list in "Nguồn số") ---------- */
+const capT = tms(D.cap_nhat);
+const capKey = capT != null ? vn(capT).key : null;
+const NGUON = Array.isArray(D.nguon) ? D.nguon.filter(x => x && x.ten) : [];
+const ng = name => NGUON.find(x => x.ten === name) || null;
+function lucNgan(iso) { const t = tms(iso); if (t == null) return null; const v = vn(t); return v.H + ':' + v.M + (capKey && v.key === capKey ? '' : ' ' + v.d + '/' + v.m); }
+function srcLine(names, extra) {
+  const groups = [];
+  for (const n of names) {
+    const x = ng(n), w = x ? (lucNgan(x.luc) || 'chưa rõ giờ') : '';
+    const g = groups.find(q => q.w === w);
+    if (g) g.n.push(n); else groups.push({ w, n: [n] });
+  }
+  const txt = groups.map(g => g.n.join(', ') + (g.w ? ' ' + g.w : '')).join(' · ');
+  const e = h('p', { class: 'src' }, 'Nguồn: ' + (txt || 'chưa có') + (extra ? ' · ' + extra : ''));
+  const notes = names.map(n => { const x = ng(n); return x && x.ghi_chu ? n + ': ' + x.ghi_chu : null; }).filter(Boolean);
+  if (notes.length) e.title = notes.join('\n');
+  return e;
+}
+const srcTip = names => names.map(n => { const x = ng(n); return 'Nguồn: ' + n + (x && x.luc ? ' · ' + gio(x.luc) : ''); }).join('\n');
+
+/* ---------- vocab ---------- */
+const THE_LOAI = { puzzle: 'Giải đố', strategy: 'Chiến thuật', driving: 'Lái xe', racing: 'Đua xe', action: 'Hành động', management: 'Quản lý', matching: 'Ghép cặp', arcade: 'Phản xạ', words: 'Chữ', word: 'Chữ', io: 'Đấu nhiều người', merge: 'Ghép đồ', idle: 'Chờ lên cấp', tycoon: 'Kinh doanh', casual: 'Giải trí nhẹ', shooter: 'Bắn súng', shooting: 'Bắn súng', sports: 'Thể thao', card: 'Bài', cards: 'Bài', board: 'Cờ bàn', platformer: 'Nhảy vượt', runner: 'Chạy vô tận', simulation: 'Mô phỏng', adventure: 'Phiêu lưu', rpg: 'Nhập vai', 'tower-defense': 'Thủ thành', 'tower defense': 'Thủ thành', physics: 'Vật lý', educational: 'Học tập', quiz: 'Đố vui', music: 'Âm nhạc', rhythm: 'Theo nhịp', clicker: 'Bấm liên tục', 'match-3': 'Xếp 3', match3: 'Xếp 3', 'bubble-shooter': 'Bắn bóng', mahjong: 'Mạt chược', solitaire: 'Xếp bài', 'hidden-object': 'Tìm đồ', cooking: 'Nấu ăn', 'dress-up': 'Thay đồ', relax: 'Thư giãn' };
+const theLoai = s => s ? (THE_LOAI[String(s).toLowerCase()] || String(s)) : null;
+const OP = { cao: { t: 'Cơ hội cao', c: 'good' }, vua: { t: 'Cơ hội vừa', c: 'good vua' }, thap: { t: 'Cơ hội thấp', c: 'none low' }, chua_du_so: { t: 'Chưa đủ số', c: 'none' } };
+const CG_TT = { 'awaiting review': 'Chờ duyệt', rejected: 'Bị từ chối', draft: 'Bản nháp, chưa gửi duyệt', 'in review': 'Đang duyệt', approved: 'Đã duyệt', published: 'Đã lên trang', live: 'Đã lên trang' };
+function tone(tt) {
+  const s = String(tt || '').toLowerCase();
+  if (!s) return 'none';
+  if (s.includes('chưa kiểm')) return 'none';
+  if (s.includes('từ chối') || s.startsWith('đã bị gỡ')) return 'bad';
+  if (/^(đang chơi được|đang phát|đã lên trang|đã duyệt|chơi được)/.test(s)) return 'good';
+  if (/chờ|đang duyệt|chưa đăng|bản nháp/.test(s)) return 'warn';
+  return 'none';
+}
+function platKey(ten) {
+  const s = String(ten || '').toLowerCase();
+  if (s.startsWith('playgama danh mục')) return 'pg-dm';
+  if (s.startsWith('playgama')) return 'pg-thu';
+  if (s.includes('crazygames')) return 'cg';
+  if (s.includes('poki')) return 'poki';
+  if (s.includes('gamedistribution') || s.includes('game distribution')) return 'gd';
+  if (s.includes('yandex')) return 'ya';
+  return 'x:' + s;
+}
+const PLAT_NAME = { 'pg-thu': 'Playgama phòng thử', 'pg-dm': 'Playgama danh mục', cg: 'CrazyGames', poki: 'Poki', gd: 'GameDistribution', ya: 'Yandex Games' };
+const PLAT_SHORT = { 'pg-thu': 'Playgama', 'pg-dm': 'Playgama danh mục', cg: 'CrazyGames', poki: 'Poki', gd: 'GameDistribution', ya: 'Yandex' };
+const mainTt = tt => String(tt || '').split(' · ')[0];
+const extraTt = tt => String(tt || '').split(' · ').slice(1).join(' · ');
+const lcFirst = s => s ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+const ucFirst = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const safeImg = s => typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(s) ? s : null;
+const safeLink = s => typeof s === 'string' && /^https:\/\//i.test(s) ? s : null;
+// private play-test build: choi/<game>-<hash>.bin next to this page (only that exact shape is accepted)
+const safeChoi = c => c && typeof c === 'object' && typeof c.tep === 'string' && /^choi\/[a-z0-9-]+\.bin$/.test(c.tep) ? { tep: c.tep, mb: isNum(c.mb) ? c.mb : null } : null;
+function splitMoTa(s) {
+  s = typeof s === 'string' ? s.trim() : '';
+  if (!s) return [null, null];
+  let i = s.indexOf(':'); if (i < 0) i = s.indexOf(',');
+  if (i > 0 && i <= 48) return [s.slice(0, i).trim(), s.slice(i + 1).trim() || null];
+  return [null, s];
+}
+const clip = (s, n) => { s = String(s || '').split(' (')[0].trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; };
+
+/* ---------- model ---------- */
+const VIEC = Array.isArray(D.viec_cua_ban) ? D.viec_cua_ban.filter(x => x && typeof x === 'object') : [];
+const viecIds = new Set(VIEC.map(v => v.game).filter(Boolean));
+const GAMES = (Array.isArray(D.games) ? D.games : []).filter(g => g && typeof g === 'object').map((g, i) => {
+  const so = g.so && typeof g.so === 'object' ? g.so : {};
+  const plats = (Array.isArray(g.nen_tang) ? g.nen_tang : []).filter(p => p && typeof p === 'object').map(p => ({ key: platKey(p.ten), ten: p.ten || 'Trang khác', tt: p.trang_thai || '', tone: tone(p.trang_thai), link: safeLink(p.link), tu: p.tu || null }));
+  const pg = plats.find(p => p.key === 'pg-thu');
+  const live = !!(pg && pg.link && !/^đã bị gỡ/i.test(pg.tt));
+  // lc = lượt chơi thật (Playgama chỉ tính lượt mở game thành lượt chơi), nc = lượt mở game
+  const lc = isNum(so.luot_choi) ? so.luot_choi : null, nc = isNum(so.luot_mo) ? so.luot_mo : null;
+  const mc = so.moc && typeof so.moc === 'object' ? so.moc : null;
+  const mp = k => { const x = mc && mc[k] && typeof mc[k] === 'object' ? mc[k] : {}; return { gt: isNum(x.gt) ? x.gt : null, moc: isNum(x.moc) ? x.moc : null, dat: x.dat === true }; };
+  const moc = mc ? { tl: typeof mc.the_loai === 'string' ? mc.the_loai : null, luot: mp('luot'), giay: mp('giay'), qc: mp('qc'), mo: mc.danh_muc_mo === true, het: typeof mc.het_han === 'string' ? mc.het_han : null } : null;
+  const [viName, desc] = splitMoTa(g.mo_ta);
+  const op = g.co_hoi && g.co_hoi.muc ? String(g.co_hoi.muc) : null;
+  const ten = String(g.ten || g.thu_muc || 'Game chưa đặt tên');
+  return {
+    key: 'r' + i, id: g.thu_muc || null, ten, viName, desc, genre: theLoai(g.the_loai), day: typeof g.ngay_lam === 'string' && DAYRE.test(g.ngay_lam) ? g.ngay_lam.slice(0, 10) : null, bia: safeImg(g.bia),
+    // "Chơi" only for a page where the game is actually playable
+    plats, live, liveAny: live || plats.some(p => p.tone === 'good'), link: live ? pg.link : ((plats.find(p => p.link && p.tone === 'good') || {}).link || null),
+    choi: safeChoi(g.choi_thu),
+    lc, nc, n: lc, moc,
+    phien: isNum(so.phien) ? so.phien : null, ptb: isNum(so.phut_tb) ? so.phut_tb : null, giay: isNum(so.giay_tb) ? so.giay_tb : null,
+    thich: isNum(so.thich) ? so.thich : null, kthich: isNum(so.khong_thich) ? so.khong_thich : null,
+    soNguon: so.nguon || null, soLuc: so.luc || null, tien: isNum(g.tien_usd) ? g.tien_usd : null,
+    op, opWhy: (g.co_hoi && g.co_hoi.ly_do) || null, next: g.buoc_tiep || null, pgTu: pg ? pg.tu : null,
+    // 23/11/2026: máy tự đọc phễu người chơi của bản đang chạy và đề xuất cách sửa (tools/bang_quan_ly.py de_xuat_sua)
+    dx: g.de_xuat && typeof g.de_xuat === 'object' && typeof g.de_xuat.cho_bo === 'string' ? { muc: String(g.de_xuat.muc || ''), choBo: g.de_xuat.cho_bo, sua: typeof g.de_xuat.sua === 'string' ? g.de_xuat.sua : null, phien: isNum(g.de_xuat.phien) ? g.de_xuat.phien : null, tu: typeof g.de_xuat.tu === 'string' && DAYRE.test(g.de_xuat.tu) ? g.de_xuat.tu.slice(0, 10) : null } : null,
+    search: norm([ten, g.mo_ta, g.thu_muc, g.the_loai, theLoai(g.the_loai)].join(' '))
+  };
+});
+for (const g of GAMES) {
+  g.opp = g.op === 'cao' || g.op === 'vua';
+  g.attn = g.plats.some(p => p.tone === 'bad') || (g.id && viecIds.has(g.id)) || g.op === 'thap';
+}
+const byId = new Map(GAMES.filter(g => g.id).map(g => [g.id, g]));
+const T = D.tong && typeof D.tong === 'object' ? D.tong : {};
+const made = isNum(T.game) ? T.game : GAMES.length;
+const onPG = isNum(T.playgama_phong_thu) ? T.playgama_phong_thu : GAMES.filter(g => g.live).length;
+const onDM = isNum(T.playgama_danh_muc) ? T.playgama_danh_muc : GAMES.filter(g => g.plats.some(p => p.key === 'pg-dm' && /^đang phát/i.test(p.tt))).length;
+const hasPl = GAMES.filter(g => g.n > 0).length;
+const enough = GAMES.filter(g => g.n != null && g.n >= NGUONG).length;
+const oppN = GAMES.filter(g => g.opp).length;
+const notLive = GAMES.filter(g => !g.liveAny).length;
+const attnN = GAMES.filter(g => g.attn).length;
+const moneyKnown = isNum(T.doanh_thu_usd) || GAMES.some(g => g.tien != null);
+const moneyTotal = isNum(T.doanh_thu_usd) ? T.doanh_thu_usd : sum(GAMES.filter(g => g.tien != null).map(g => g.tien));
+const moneyGames = GAMES.filter(g => g.tien > 0).length;
+const lcKnown = GAMES.filter(g => g.lc != null);
+const plays = isNum(T.luot_choi) ? T.luot_choi : (lcKnown.length ? sum(lcKnown.map(g => g.lc)) : null);
+const ncKnown = GAMES.filter(g => g.nc != null);
+const openers = ncKnown.length ? sum(ncKnown.map(g => g.nc)) : null;
+const measured = GAMES.filter(g => g.n != null).length;
+const TODAY = capKey || (GAMES.map(g => g.day).filter(Boolean).sort().pop() || null);
+const todayMade = TODAY ? GAMES.filter(g => g.day === TODAY).length : 0;
+// "hôm nay" only while the numbers are from today (Vietnam time); numbers from an earlier day say their date instead
+const isToday = !!TODAY && TODAY === vn(Date.now()).key;
+const HN = isToday || !TODAY ? 'hôm nay' : 'ngày ' + dm(TODAY);
+const PG_SRC = ['Mốc phòng thử Playgama', 'Playgama MCP', 'Trang công khai Playgama'];
+// "lượt chơi" of a game = Playgama's own play count (launches that turned into a play), as on its sandbox card
+const OPP = GAMES.filter(g => g.opp).sort((x, y) => ((y.op === 'cao') - (x.op === 'cao')) || ((y.ptb || 0) - (x.ptb || 0)) || ((y.n || 0) - (x.n || 0)));
+const NEAR = GAMES.filter(g => g.n != null && g.n < NGUONG).sort((x, y) => (y.n - x.n) || ((y.ptb || 0) - (x.ptb || 0)) || x.ten.localeCompare(y.ten, 'vi')).slice(0, 5);
+
+/* one main state per game, in plain words: what matters most right now */
+function mainStatus(g) {
+  const P = g.plats;
+  const tip = P.map(p => (PLAT_NAME[p.key] || p.ten) + ': ' + (p.tt || 'chưa rõ') + (p.tu ? ' (từ ' + gio(p.tu) + ')' : '')).join('\n') || 'Chưa gửi lên trang nào';
+  const r = (c, t) => ({ c, t, tip });
+  if (P.some(p => /chờ bạn/i.test(p.tt)) || (g.id && viecIds.has(g.id))) return r('warn', 'Chờ bạn đăng');
+  if (g.live || P.some(p => p.tone === 'good' && !/^đã duyệt/i.test(mainTt(p.tt)))) return r('good', 'Đang chơi được');
+  const ok = P.find(p => p.tone === 'good');
+  if (ok) return r('good', (PLAT_SHORT[ok.key] || ok.ten) + ' đã duyệt');
+  const rev = P.find(p => /chờ duyệt|đang duyệt/i.test(p.tt));
+  if (rev) return r('warn', (PLAT_SHORT[rev.key] || rev.ten) + ' chờ duyệt');
+  const w = P.find(p => p.tone === 'warn');
+  if (w) return r('warn', clip(mainTt(w.tt), 30));
+  if (P.some(p => /^đã bị gỡ/i.test(p.tt))) return r('bad', 'Bị gỡ');
+  if (P.some(p => p.tone === 'bad')) return r('bad', 'Bị từ chối');
+  if (!P.length) return r('none', 'Chưa lên trang nào');
+  return r('none', clip(mainTt(P[0].tt), 30) || 'Chưa rõ');
+}
+
+/* ---------- small pieces ---------- */
+function pill(cls, text, title) { return h('span', { class: 'pill ' + cls, title: title || null }, h('i', { class: 'pd', 'aria-hidden': 'true' }), h('span', { class: 'pt' }, text)); }
+function cover(g, size, alt) {
+  if (g && g.bia) return h('img', { class: 'cv', src: g.bia, width: size, height: size, alt: '', decoding: 'async' });
+  const t = String(alt || (g && g.ten) || '?').trim().charAt(0).toUpperCase() || '?';
+  return h('span', { class: 'cv cv-ph', style: 'width:' + size + 'px;height:' + size + 'px', 'aria-hidden': 'true' }, t);
+}
+function seg(pt, state, big) { return h('div', { class: 'seg ' + state + (big ? ' big' : ''), role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pt, 'aria-label': pt + '%' }, h('i', { style: 'width:' + pt + '%' })); }
+function platPill(p) {
+  const x = extraTt(p.tt);
+  // a game can be in several partner catalogues: keep the partner name Playgama gives each one
+  const name = p.key === 'pg-dm' ? p.ten : (PLAT_NAME[p.key] || p.ten);
+  return [pill(p.tone, name + ': ' + lcFirst(mainTt(p.tt) || 'chưa rõ')), x ? h('span', { class: 'xtra' }, x) : null, p.tu ? h('span', { class: 'xtra nw' }, 'từ ' + gio(p.tu)) : null,
+    p.link && p.tone === 'good' ? h('a', { class: 'pl-go', href: p.link, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Chơi trên ' + name + ' (mở trang mới)' }, 'Chơi', icon('arrow', 'ic s')) : null];
+}
+const opPill = g => { const o = OP[g.op] || { t: g.op ? String(g.op) : 'Chưa chấm', c: 'none' }; return pill(o.c, o.t, g.opWhy || null); };
+function ans(kids) { return h('p', { class: 'ans' }, kids); }
+function joinParts(parts, sep) { const out = []; parts.forEach((p, i) => { if (i) out.push(sep); out.push(p); }); return out; }
+// "xem thêm": native <details>, closed by default, one-line summary
+function more(title, sm, body, o) {
+  o = o || {};
+  return h('details', { class: 'dd' + (o.cls ? ' ' + o.cls : ''), id: o.id || null, open: o.open ? true : null },
+    h('summary', null, h('span', { class: 'sum' }, o.dot ? h('i', { class: 'pd', 'aria-hidden': 'true' }) : null, h('span', null, title), sm ? h('span', { class: 'sm' }, sm) : null, icon('down', 'ic s'))),
+    h('div', { class: 'dd-b' + (o.flush ? ' flush' : '') }, body));
+}
+
+// small history charts: shown on wide screens, one tap away on phones (keeps the phone page short)
+const WIDE = window.matchMedia('(min-width: 1100px)').matches;
+function chartBox(title, sm, body) {
+  if (WIDE) return h('div', { class: 'panel blk' }, h('h3', { class: 'sub-h' }, h('span', null, title), sm ? h('small', null, sm) : null, colLegend()), body);
+  return more(title, sm, [colLegend(), body]);
+}
+
+/* ---------- jumping around: offset under the pinned bar, focus the heading ---------- */
+const NAVEL = $('#nav');
+const navH = () => Math.round(NAVEL.getBoundingClientRect().height);
+function setNavVar() { document.documentElement.style.setProperty('--navh', navH() + 'px'); }
+let spy = { lock() {} };
+function jumpTo(id, focus) {
+  const el = document.getElementById(id); if (!el) return;
+  spy.lock(id);
+  const y = el.getBoundingClientRect().top + window.scrollY - navH() - 10;
+  window.scrollTo({ top: Math.max(0, Math.round(y)), behavior: motion() });
+  if (focus) {
+    const t = el.querySelector('h2') || el;
+    if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+    t.focus({ preventScroll: true });
+  }
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  let id = a.getAttribute('href').slice(1);
+  try { id = decodeURIComponent(id); } catch (err) { /* keep raw */ }
+  if (!id || !document.getElementById(id)) return;
+  e.preventDefault();
+  jumpTo(id, true);
+});
+
+/* ---------- charts (inline SVG, drawn to scale) ---------- */
+const LBL_FONT = '500 13px "Be Vietnam Pro", system-ui, sans-serif';
+const ctx2d = document.createElement('canvas').getContext('2d');
+function fitText(s, max, font) {
+  ctx2d.font = font;
+  if (ctx2d.measureText(s).width <= max) return s;
+  let lo = 0, hi = s.length;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (ctx2d.measureText(s.slice(0, mid) + '…').width <= max) lo = mid; else hi = mid - 1; }
+  return s.slice(0, lo).trimEnd() + '…';
+}
+function niceTicks(max, target) {
+  target = target || 4;
+  if (!(max > 0)) return [0, 1];
+  const raw = max / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  let step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+  if (max >= 1) step = Math.max(1, step);
+  const out = [];
+  for (let v = 0; v < max + step * 0.999; v += step) out.push(Math.round(v * 1e6) / 1e6);
+  if (out[out.length - 1] < max) out.push(out[out.length - 1] + step);
+  return out;
+}
+const barH = (x, y, w, hh, r) => { if (!(w > 0)) return ''; r = Math.min(r, w, hh / 2); return 'M' + x + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + hh - r) + 'Q' + (x + w) + ',' + (y + hh) + ' ' + (x + w - r) + ',' + (y + hh) + 'H' + x + 'Z'; };
+const barV = (x, base, w, hh, r) => { if (!(hh > 0)) return ''; r = Math.min(r, hh, w / 2); const y = base - hh; return 'M' + x + ',' + base + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + base + 'Z'; };
+const CHARTS = [];
+function chart(draw) { const box = h('div', { class: 'chartbox' }); CHARTS.push({ box, draw, w: 0 }); return box; }
+function drawCharts(force) { for (const c of CHARTS) { const w = Math.floor(c.box.clientWidth); if (w && (force || w !== c.w)) { c.w = w; c.draw(c.box, w); } } }
+
+function drawPlayers(items) {
+  return (box, W) => {
+    W = Math.max(240, W);
+    const rowH = 30, top = 22, bot = 4, labelW = Math.min(160, Math.round(W * 0.36)), valW = 54;
+    const x0 = labelW + 12, x1 = W - valW - 8;
+    const maxV = Math.max(1, ...items.map(g => Math.max(g.lc || 0, g.nc || 0)));
+    const ticks = niceTicks(maxV), vmax = ticks[ticks.length - 1];
+    const X = v => x0 + (x1 - x0) * v / vmax;
+    const H = top + items.length * rowH + bot;
+    const svg = sv('svg', { class: 'chart', width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Lượt chơi thật và lượt mở game của ' + items.length + ' game nhiều lượt chơi nhất' });
+    for (const t of ticks) {
+      const x = Math.round(X(t)) + 0.5;
+      svg.append(sv('line', { class: t === 0 ? 'ax' : 'gl', x1: x, x2: x, y1: top - 4, y2: H - bot }));
+      svg.append(sv('text', { class: 'tick', x: x, y: 11, 'text-anchor': 'middle' }, n0(t)));
+    }
+    items.forEach((g, i) => {
+      const cy = top + i * rowH + rowH / 2;
+      const gr = sv('g', { class: 'row' });
+      gr.append(sv('title', null, g.ten + ': ' + n0(g.lc) + ' lượt chơi thật, ' + (g.nc != null ? n0(g.nc) : 'chưa có số') + ' lượt mở game (Playgama tính)'));
+      gr.append(sv('rect', { class: 'hit', x: 0, y: cy - rowH / 2 + 1, width: W, height: rowH - 2, rx: 6 }));
+      gr.append(sv('text', { class: 'lbl', x: labelW, y: cy + 4.5, 'text-anchor': 'end' }, fitText(g.ten, labelW - 4, LBL_FONT)));
+      if (g.lc > 0) gr.append(sv('path', { class: 'bar', d: barH(x0, cy - 6, X(g.lc) - x0, 12, 4) }));
+      if (g.nc != null) gr.append(sv('circle', { class: 'dot', cx: X(g.nc), cy: cy, r: 4.5 }));
+      gr.append(sv('text', { class: 'val', x: W - 2, y: cy + 4.5, 'text-anchor': 'end' }, sv('tspan', null, n0(g.lc)), g.nc != null ? sv('tspan', { class: 'v2' }, ' · ' + n0(g.nc)) : null));
+      svg.append(gr);
+    });
+    box.replaceChildren(svg);
+  };
+}
+function drawCols(days, o) {
+  return (box, W) => {
+    W = Math.max(240, W);
+    const H = o.h || 160, left = o.left || 36, bot = 22, top = 20;
+    const n = days.length, slot = (W - left) / n, bw = Math.max(3, Math.min(24, slot * 0.58));
+    const maxV = Math.max(o.minMax || 1, ...days.map(d => d.v || 0));
+    const ticks = niceTicks(maxV, 3), vmax = ticks[ticks.length - 1];
+    const Y = v => top + (H - bot - top) * (1 - v / vmax);
+    const svg = sv('svg', { class: 'chart', width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': o.label });
+    for (const t of ticks) {
+      const y = Math.round(Y(t)) + 0.5;
+      svg.append(sv('line', { class: t === 0 ? 'ax' : 'gl', x1: left, x2: W, y1: y, y2: y }));
+      svg.append(sv('text', { class: 'tick', x: left - 7, y: y + 4, 'text-anchor': 'end' }, n0(t)));
+    }
+    const every = n <= 10 ? 1 : Math.ceil(n / 6);
+    let maxI = 0; days.forEach((d, i) => { if ((d.v || 0) > (days[maxI].v || 0)) maxI = i; });
+    days.forEach((d, i) => {
+      const cx = left + slot * i + slot / 2, x = cx - bw / 2, v = d.v || 0;
+      const gr = sv('g', { class: 'row' });
+      gr.append(sv('title', null, o.title(d)));
+      gr.append(sv('rect', { class: 'hit', x: left + slot * i + 1, y: 2, width: Math.max(1, slot - 2), height: H - 4, rx: 6 }));
+      if (v > 0) gr.append(sv('path', { class: 'col' + (d.em ? ' em' : ''), d: barV(x, Y(0), bw, Y(0) - Y(v), 4) }));
+      if (n <= 10 || d.em || i === maxI) gr.append(sv('text', { class: 'val', x: cx, y: Y(v) - 6, 'text-anchor': 'middle' }, o.fmt(d.v)));
+      if (i % every === 0 || i === n - 1) gr.append(sv('text', { class: 'tick' + (d.em ? ' em' : ''), x: cx, y: H - 5, 'text-anchor': 'middle' }, d.label));
+      svg.append(gr);
+    });
+    box.replaceChildren(svg);
+  };
+}
+const colLegend = () => h('span', { class: 'legend' }, h('span', { class: 'k' }, h('i', { class: 'sw-col em' }), HN), h('span', { class: 'k' }, h('i', { class: 'sw-col' }), 'ngày khác'));
+
+/* ---------- header, scoreboard ---------- */
+function renderMeta() {
+  const m = $('#meta');
+  const up = gio(D.cap_nhat);
+  const stale = capT != null && Date.now() - capT > 6 * 3600e3;
+  const bad = NGUON.filter(x => !x.ok);
+  let older = '';
+  if (capT != null) {
+    const old = NGUON.filter(x => { const t = tms(x.luc); return t != null && capT - t > 5 * 60e3; });
+    if (old.length) {
+      const first = old.reduce((a, b) => tms(a.luc) <= tms(b.luc) ? a : b);
+      const ft = tms(first.luc), when = vn(ft).key === vn(capT).key ? gioNgan(first.luc) : gio(first.luc);
+      older = old.every(x => /playgama/i.test(x.ten)) ? 'số Playgama đọc lúc ' + when : 'số cũ nhất đọc lúc ' + when + ' (' + first.ten + ')';
+    }
+  }
+  m.replaceChildren(
+    h('span', { class: stale ? 'stale' : null }, 'Cập nhật ', B(up || 'chưa rõ giờ'), h('span', { id: 'ago' }, up ? ' · ' + ago(D.cap_nhat) : ''), stale ? ' · số đã cũ' : ''),
+    h('a', { class: 'health' + (bad.length ? ' bad' : ''), href: '#nguon' }, h('i', { class: 'pd', 'aria-hidden': 'true' }),
+      NGUON.length ? (bad.length ? bad.length + ' nguồn lỗi: ' + bad.map(x => x.ten).join(', ') : NGUON.length + '/' + NGUON.length + ' nguồn đọc được') : 'chưa có danh sách nguồn',
+      older ? ' · ' + older : '')
+  );
+}
+function renderScore() {
+  const days = new Set(GAMES.map(g => g.day).filter(Boolean)).size;
+  const cells = [
+    { href: '#tong', k: 'Tổng game', v: n0(made), s: todayMade ? '+' + todayMade + ' làm ' + HN : (days ? 'làm trong ' + days + ' ngày' : ''), tip: srcTip(['Thư mục game']) },
+    { href: '#trang', k: 'Đang chơi được', v: n0(onPG), s: 'trên Playgama phòng thử', tip: srcTip(['Playgama MCP']) },
+    { href: '#khach', k: 'Lượt chơi', v: plays == null ? null : n0(plays), s: openers != null ? n0(openers) + ' lượt mở game' : 'chưa có số lượt mở', tip: srcTip(PG_SRC) },
+    { href: '#khach', k: 'Tiền thu', v: moneyKnown ? usd(moneyTotal) + ' đô' : null, s: moneyKnown ? 'từ ' + moneyGames + ' game' : 'máy chưa đọc được', tip: moneyKnown ? '' : 'Chưa có nguồn nào cho số tiền' },
+    { href: '#co-hoi', k: 'Game có cơ hội', v: measured ? n0(oppN) : null,
+      s: oppN ? OPP.slice(0, 2).map(g => g.ten).join(', ') + (oppN > 2 ? '…' : '')
+        : NEAR.length ? 'cao nhất mới ' + NEAR[0].n + '/' + NGUONG + ' lượt chơi'
+        : measured ? 'chưa game nào có lượt chơi' : 'chưa game nào lên trang có số lượt chơi', tip: srcTip(PG_SRC) }
+  ];
+  $('#score').replaceChildren(...cells.map(c => h('a', { class: 'cell' + (c.v == null ? ' na' : ''), href: c.href, title: c.tip || null },
+    h('span', { class: 'k' }, c.k), h('span', { class: 'v' + (c.v == null ? ' na' : '') }, c.v == null ? 'chưa có số' : c.v), c.s ? h('span', { class: 's' }, c.s) : null)));
+}
+
+/* ---------- nav: pinned chips + scroll-spy + "lên đầu" ---------- */
+const NAV = [['tong', 'Tổng'], ['trang', 'Trang'], ['khach', 'Tiền & khách'], ['co-hoi', 'Cơ hội'], ['dang-lam', 'Đang làm'], ['game', 'Game'], ['chi-phi', 'Chi phí'], ['nguon', 'Nguồn']];
+function renderNav() {
+  const row = $('#chips'), toTop = $('#totop');
+  const chipMap = new Map();
+  if (VIEC.length) { const a = h('a', { class: 'chip chip-task', href: '#viec' }, 'Việc của bạn · ' + VIEC.length); chipMap.set('viec', a); row.append(a); }
+  for (const [id, t] of NAV) { const a = h('a', { class: 'chip', href: '#' + id }, t); chipMap.set(id, a); row.append(a); }
+  const ids = [...chipMap.keys()];
+  let primary = null, pinned = null, pinY = 0, lockId = null, lockT = 0, queued = false;
+
+  const fades = () => {
+    const max = row.scrollWidth - row.clientWidth;
+    row.classList.toggle('fl', row.scrollLeft > 4);
+    row.classList.toggle('fr', max > 4 && row.scrollLeft < max - 4);
+  };
+  const reveal = id => {
+    const c = id ? chipMap.get(id) : null;
+    if (!c) { if (row.scrollLeft) row.scrollTo({ left: 0, behavior: motion() }); return; }
+    const l = c.offsetLeft, r = l + c.offsetWidth;
+    if (l - 28 < row.scrollLeft || r + 28 > row.scrollLeft + row.clientWidth) row.scrollTo({ left: Math.max(0, Math.round(l - (row.clientWidth - c.offsetWidth) / 2)), behavior: motion() });
+  };
+  const mark = (on, prim) => {
+    prim = prim && on.includes(prim) ? prim : (on[0] || null);
+    for (const [id, a] of chipMap) {
+      a.classList.toggle('on', on.includes(id) && id !== prim);
+      if (id === prim) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    }
+    if (prim !== primary) { primary = prim; reveal(prim); }
+  };
+  // the row on screen = the sections whose top passed a line under the pinned bar (two side by side on wide screens)
+  const pick = () => {
+    const secs = ids.map(id => document.getElementById(id)).filter(Boolean).map(e => { const r = e.getBoundingClientRect(); return { id: e.id, top: r.top, bottom: r.bottom }; });
+    if (!secs.length || window.scrollY < 24) return [];
+    const nh = navH(), line = nh + Math.min(150, (window.innerHeight - nh) * 0.3);
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    let top = -Infinity;
+    for (const s of secs) if (s.top <= line && s.top > top) top = s.top;
+    if (atBottom) {
+      // only sections really on screen (below the pinned bar) count at the very bottom
+      const vis = secs.filter(s => s.top < window.innerHeight - 40 && s.bottom > nh + 40);
+      const p = pinned && vis.find(s => s.id === pinned);
+      top = p ? p.top : Math.max(top, ...vis.map(s => s.top));
+    }
+    if (top === -Infinity) return [];
+    return secs.filter(s => Math.abs(s.top - top) < 3).map(s => s.id);
+  };
+  const update = () => {
+    queued = false;
+    const y = window.scrollY;
+    NAVEL.classList.toggle('stuck', y > 0 && NAVEL.getBoundingClientRect().top <= 0.5);
+    toTop.classList.toggle('show', y > Math.max(500, window.innerHeight * 0.8));
+    if (lockId) return;
+    // a chip tapped on purpose stays lit until the person scrolls away on their own
+    if (pinned && Math.abs(y - pinY) > 160) pinned = null;
+    const on = pick();
+    if (pinned && !on.includes(pinned)) pinned = null;
+    mark(on, pinned);
+  };
+  const unlockLater = ms => { clearTimeout(lockT); lockT = setTimeout(() => { lockId = null; pinY = window.scrollY; update(); }, ms); };
+  spy = {
+    lock(id) { lockId = id || 'dau'; pinned = id || null; mark(id ? [id] : [], id || null); unlockLater(700); }
+  };
+  window.addEventListener('scroll', () => {
+    if (lockId) unlockLater(160);
+    if (!queued) { queued = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  row.addEventListener('scroll', () => requestAnimationFrame(fades), { passive: true });
+  window.addEventListener('resize', () => { setNavVar(); fades(); update(); }, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(setNavVar).observe(NAVEL);
+  toTop.addEventListener('click', () => {
+    spy.lock(null);
+    window.scrollTo({ top: 0, behavior: motion() });
+    const t = $('#dau'); if (t) t.focus({ preventScroll: true });
+  });
+  setNavVar(); fades(); update();
+}
+
+/* ---------- top: your tasks + this batch ---------- */
+function batchInfo(dl) {
+  const rows = Array.isArray(dl.games) ? dl.games.filter(r => r && typeof r === 'object') : [];
+  // 22/11/2026: đếm theo GAME; 2 dòng chung (chọn ý, kiểm ý) không tính vào "xong" (1 game 25% từng hiện "2/3 việc xong, 75%")
+  const game = rows.filter(r => r.thu_muc), het = game.filter(r => clampPt(r.pt) >= 100);
+  const dung = het.filter(r => /^(dừng|lỗi)|CHƯA lên|dừng ở đây/i.test(r.buoc || ''));
+  // 25/11/2026: việc chia bước (vd. Pebble Hop v2 làm 9 hồ): dòng "Bước k/n · <tên>", đếm theo bước, không theo game
+  const pha = rows.filter(r => !r.thu_muc && /^Bước \d+\/\d+/.test(r.ten || '')), cur = pha.find(r => clampPt(r.pt) < 100);
+  return { rows, pt: clampPt(dl.pt), xong: !!dl.xong, nGame: game.length, nDone: het.length - dung.length, nStop: dung.length, nLive: rows.filter(r => /đã lên phòng thử/i.test(r.buoc || '')).length,
+    pha: pha.length > 0, phaN: pha.length, phaDone: pha.filter(r => clampPt(r.pt) >= 100).length,
+    cur: cur ? String(cur.ten).replace(/^Bước \d+\/\d+\s*·\s*/, '') : '', ten: typeof dl.ten === 'string' ? dl.ten : '' };
+}
+const doneTxt = b => b.pha ? [b.ten ? b.ten + ': ' : '', B(b.phaDone + '/' + n0(b.phaN)), ' bước xong', b.cur && !b.xong ? ' · đang: ' + b.cur : '']
+  : b.nGame ? [B(b.nDone + '/' + n0(b.nGame)), ' game xong', b.nStop ? [', ', B(n0(b.nStop)), ' dừng'] : ''] : ['đang chọn ý game'];
+function batchRows(rows) {
+  return h('ul', { class: 'runs' }, rows.map(r => {
+    const g = r.thu_muc ? byId.get(r.thu_muc) : null;
+    const pt = clampPt(r.pt), stall = /im (\d+) phút/.exec(r.buoc || '');
+    const state = pt >= 100 ? 'done' : (stall ? 'stall' : 'run');
+    const step = String(r.buoc || '').replace(/\s*·\s*im \d+ phút/, '');
+    return h('li', { class: 'run' }, cover(g, 32, r.thu_muc ? r.ten : ((/^Bước (\d+)/.exec(r.ten || '') || [])[1] || 'Ý')),
+      h('div', null,
+        h('div', { class: 'run-top' }, h('span', { class: 'run-name' }, r.ten || r.thu_muc || 'Việc'), h('span', { class: 'run-pt tnum' }, pt + '%')),
+        seg(pt, state),
+        h('div', { class: 'run-step' }, step || null, stall ? pill('warn', 'im ' + stall[1] + ' phút') : null)));
+  }));
+}
+const openBatch = () => { const d = document.getElementById('dot-chi-tiet'); if (d) d.open = true; };
+function renderTop() {
+  const tg = $('#topgrid'); const parts = [];
+  if (VIEC.length) {
+    parts.push(h('section', { class: 'tasks', id: 'viec', 'aria-labelledby': 'h-viec' },
+      h('div', { class: 'tasks-h' }, h('span', { class: 'badge' }, String(VIEC.length)), h('h2', { id: 'h-viec' }, 'Việc của bạn')),
+      VIEC.map((v, i) => {
+        const g = v.game ? byId.get(v.game) : null;
+        const row = [h('span', { class: 'no', 'aria-hidden': 'true' }, String(i + 1)),
+          h('span', { class: 'task-h' }, h('span', { class: 'task-t' }, v.viec || 'Việc chưa ghi tên'),
+            (v.ten || v.game) ? h('span', { class: 'task-g' }, cover(g, 26, v.ten || v.game), v.ten || v.game) : null)];
+        const body = [v.chi_tiet ? h('p', { class: 'task-d' }, v.chi_tiet) : null,
+          // 22/11/2026: play it here first, then open Playgama's OWN publish page (the owner clicks there: rule 11.2)
+          (g && g.choi) || safeLink(v.link) ? h('div', { class: 'task-acts' },
+            g && g.choi ? tryBtn(g, 'try-btn') : null,
+            safeLink(v.link) ? h('a', { class: 'task-go', href: safeLink(v.link), target: '_blank', rel: 'noopener noreferrer' }, 'Duyệt đăng trên Playgama', icon('arrow', 'ic s')) : null) : null].filter(Boolean);
+        // 24/11/2026: closed by default, one line per task; the open one survives the auto-reload (taiLai / khoiPhuc)
+        return body.length
+          ? h('details', { class: 'task', name: 'viec', 'data-k': (v.game || '#' + i) + '|' + (v.viec || '') },
+              h('summary', { class: 'task-s' }, row, icon('down', 'ic')), h('div', { class: 'task-b' }, body))
+          : h('div', { class: 'task' }, h('div', { class: 'task-s' }, row));
+      }),
+      srcLine(['Hàng chờ đăng Playgama'])));
+  } else {
+    parts.push(h('p', { class: 'calm' }, icon('check'), 'Không có việc nào chờ bạn.'));
+  }
+  const dl = D.dang_lam && typeof D.dang_lam === 'object' ? D.dang_lam : null;
+  if (dl) {
+    const b = batchInfo(dl);
+    parts.push(h('section', { class: 'batch' + (b.xong ? ' done' : ''), 'aria-labelledby': 'h-dot' },
+      h('div', { class: 'b-h' }, h('h2', { class: 'b-t', id: 'h-dot' }, b.xong ? (b.pha ? 'Vừa xong' : 'Đợt làm game') : 'Đang làm'), dl.bat_dau ? h('span', { class: 'b-when' }, 'bắt đầu ' + gio(dl.bat_dau)) : null, b.xong ? pill('good', 'Xong') : pill('acc', 'Đang chạy')),
+      h('div', { class: 'b-main' }, h('span', { class: 'b-pt' }, b.pt + '%'), seg(b.pt, b.xong ? 'done' : 'run', true)),
+      h('p', { class: 'b-s' },
+        h('span', null, !b.rows.length ? NA('Chưa có số từng việc.') : (b.xong && !b.pha) ? [B(n0(b.nGame)), ' game mới', b.nLive ? [', ', B(n0(b.nLive)), ' đã lên phòng thử Playgama'] : '', '.'] : doneTxt(b)),
+        b.rows.length ? h('a', { class: 'b-link', href: '#dang-lam', onclick: openBatch }, b.pha ? 'Xem từng bước' : b.xong ? 'Xem từng game' : 'Xem từng việc', icon('right', 'ic s')) : null)));
+  }
+  tg.classList.toggle('two', parts.length > 1 && VIEC.length > 0);
+  tg.classList.toggle('calm-row', parts.length > 1 && !VIEC.length);
+  add(tg, parts);
+}
+
+/* ---------- 01 total + level path ---------- */
+function renderTong() {
+  const b = $('#b-tong');
+  b.append(ans([B(n0(made)), ' game', todayMade ? ' (' + todayMade + ' làm ' + HN + ')' : '', ', ',
+    onPG > 0 ? [B(n0(onPG)), ' chơi được trên Playgama'] : 'chưa game nào chơi được trên Playgama', '; ',
+    moneyKnown ? (moneyGames > 0 ? [B(n0(moneyGames)), ' game ra tiền'] : 'chưa game nào ra tiền') : ['tiền ', NA('chưa có số')], '.']));
+  const stages = [
+    { t: 'Đã làm', v: made, note: todayMade ? 'có ' + todayMade + ' game làm ' + HN : 'game trong xưởng' },
+    { t: 'Đã lên Playgama', v: onPG, note: 'đang chơi được ở phòng thử Playgama' },
+    // no game has player numbers yet = unknown, not 0 (same rule as the scoreboard)
+    { t: 'Có người chơi', v: measured ? hasPl : null, note: 'có lượt chơi thật (Playgama tính)' },
+    { t: 'Đủ ' + NGUONG + ' lượt chơi', v: measured ? enough : null, note: 'đủ số để chấm: từ ' + NGUONG + ' lượt chơi thật (tài liệu Playgama: dưới 30 chỉ là tín hiệu sớm)' },
+    { t: 'Có cơ hội', v: measured ? oppN : null, note: 'thời gian mỗi lượt từ 3/4 mốc vào danh mục của Playgama trở lên (cách chấm ở mục 04)' },
+    { t: 'Ra tiền', v: moneyKnown ? moneyGames : null, note: moneyKnown ? 'có doanh thu' : 'máy chưa đọc được tiền từ trang nào' }
+  ];
+  const base = Math.max(1, made);
+  b.append(h('div', { class: 'blk panel' }, h('ol', { class: 'path', 'aria-label': 'Các chặng của game' }, stages.map((s, i) =>
+    h('li', { class: 'st' + (s.v == null ? ' unk' : (s.v > 0 ? ' on' : '')), title: s.t + ': ' + s.note },
+      h('span', { class: 'node', 'aria-hidden': 'true' }, s.v == null ? '?' : String(i + 1)),
+      h('span', { class: 'st-name' }, s.t),
+      s.v != null ? h('span', { class: 'st-bar', 'aria-hidden': 'true' }, s.v > 0 ? h('i', { style: 'width:' + Math.max(1.5, Math.min(100, s.v / base * 100)) + '%' }) : null) : h('span', { 'aria-hidden': 'true' }),
+      h('span', { class: 'st-v' + (s.v == null ? ' na' : '') }, s.v == null ? 'chưa có số' : n0(s.v)))))));
+  b.append(srcLine(['Thư mục game', 'Playgama MCP', 'Trang công khai Playgama']));
+}
+
+/* ---------- 02 platform cabinets ---------- */
+function renderTrang() {
+  const b = $('#b-trang');
+  const agg = new Map();
+  for (const g of GAMES) for (const p of g.plats) {
+    let a = agg.get(p.key);
+    if (!a) { a = { key: p.key, ten: p.ten, items: [], st: new Map() }; agg.set(p.key, a); }
+    a.items.push({ g, p });
+    const k = mainTt(p.tt) || 'chưa rõ', cur = a.st.get(k) || { n: 0, tone: p.tone };
+    cur.n++; a.st.set(k, cur);
+  }
+  const stList = (a, skip) => a ? [...a.st.entries()].filter(([k]) => !skip || !skip.test(k)).sort((x, y) => y[1].n - x[1].n) : [];
+  const cg = agg.get('cg');
+  let cgList = stList(cg);
+  if (!cg && T.crazygames && typeof T.crazygames === 'object') cgList = Object.entries(T.crazygames).map(([k, n]) => { const t = CG_TT[String(k).toLowerCase()] || k; return [t, { n: n, tone: tone(t) }]; });
+  const say = [];
+  say.push(onPG > 0 ? ['Playgama: ', B(n0(onPG)), ' game chơi được.'] : 'Chưa game nào chơi được trên Playgama.');
+  if (cgList.length) say.push([' CrazyGames: ', joinParts(cgList.map(([k, v]) => [B(String(v.n)), ' ' + lcFirst(k)]), ', '), '.']);
+  if (onDM > 0) say.push([' Danh mục chính Playgama: ', B(n0(onDM)), ' game.']);
+  if (notLive) say.push([' ', B(n0(notLive)), ' game chưa chơi được ở trang nào.']);
+  b.append(ans(say));
+
+  const cabs = h('div', { class: 'cabs blk' });
+  const sortNew = (x, y) => (y.g.day || '').localeCompare(x.g.day || '') || ((tms(y.p && y.p.tu) || 0) - (tms(x.p && x.p.tu) || 0)) || cmpName(x.g, y.g);
+  function cab(o) {
+    const items = o.items.slice().sort(o.sort || sortNew);
+    const shown = items.slice(0, 8);
+    const btn = h('button', { class: 'cab', type: 'button', disabled: items.length ? null : true, 'aria-pressed': 'false', 'aria-label': o.name + (o.tag ? ' ' + o.tag : '') + ': ' + o.count + ' ' + o.unit + (items.length ? '. Bấm để xem các game này trong danh sách' : '') },
+      h('span', { class: 'cab-h' }, h('i', { class: 'lt ' + o.light, 'aria-hidden': 'true' }),
+        h('span', { class: 'cab-t' }, h('span', { class: 'cab-name' }, o.name), o.tag ? h('span', { class: 'cab-tag' }, o.tag) : null),
+        items.length ? icon('right', 'ic s go') : null),
+      h('span', { class: 'cab-b' },
+        h('span', { class: 'cab-row' },
+          h('span', { class: 'cab-n' }, h('b', null, n0(o.count)), h('span', null, o.unit)),
+          o.st && o.st.length ? h('span', { class: 'cab-st' }, o.st.map(([k, v]) => pill(v.tone, v.n + ' ' + lcFirst(k)))) : null),
+        o.empty && !items.length ? h('span', { class: 'cab-d' }, o.empty) : null,
+        shown.length ? h('span', { class: 'covers', 'aria-hidden': 'true' }, shown.map(({ g, p }) => { const c = cover(g, 28); c.title = g.ten + (p ? ': ' + lcFirst(mainTt(p.tt)) : ''); if (p && o.ring && p.tone !== 'good' && p.tone !== 'none') c.classList.add(p.tone); return c; }), items.length > shown.length ? h('span', { class: 'more' }, '+' + (items.length - shown.length)) : null) : null));
+    btn.addEventListener('click', () => { o.onPick(); jumpTo('game', false); });
+    btn.dataset.pick = o.pickKey;
+    return btn;
+  }
+  const pg = agg.get('pg-thu');
+  const pgItems = pg ? pg.items.filter(x => x.g.live) : [];
+  // pills = where the other Playgama games stand; every playable one (also "chơi được bằng link") is already in the big number
+  const pgOff = new Map();
+  if (pg) for (const { g, p } of pg.items) if (!g.live) { const k = mainTt(p.tt) || 'chưa rõ', c = pgOff.get(k) || { n: 0, tone: p.tone }; c.n++; pgOff.set(k, c); }
+  cabs.append(cab({ name: 'Playgama', tag: 'phòng thử', count: onPG, unit: 'chơi được', light: onPG ? 'good' : 'none', items: pgItems, st: [...pgOff.entries()].sort((x, y) => y[1].n - x[1].n), empty: 'chưa có game nào', pickKey: 'pg-thu', onPick: () => setPlat('pg-thu') }));
+  const dmA = agg.get('pg-dm');
+  cabs.append(cab({ name: 'Playgama', tag: 'danh mục chính', count: onDM, unit: 'đang phát', light: onDM ? 'good' : 'none', items: dmA ? dmA.items : [], st: stList(dmA, /^đang phát/i), empty: 'chưa game nào vào đây (phát sang web đối tác)', pickKey: 'pg-dm', onPick: () => setPlat('pg-dm') }));
+  const cgCount = cg ? new Set(cg.items.map(x => x.g.key)).size : sum(cgList.map(([, v]) => v.n));
+  cabs.append(cab({ name: 'CrazyGames', tag: '', count: cgCount, unit: 'đã gửi', light: cgList.some(([, v]) => v.tone === 'good') ? 'good' : cgList.some(([, v]) => v.tone === 'warn') ? 'warn' : cgList.length ? 'bad' : 'none', items: cg ? cg.items : [], st: cgList, ring: true, empty: 'chưa gửi game nào', pickKey: 'cg', onPick: () => setPlat('cg') }));
+  for (const [k, a] of agg) if (k.startsWith('x:') || ['poki', 'gd', 'ya'].includes(k)) {
+    const ls = stList(a);
+    cabs.append(cab({ name: a.ten, tag: '', count: new Set(a.items.map(x => x.g.key)).size, unit: 'game', light: ls.some(([, v]) => v.tone === 'good') ? 'good' : 'warn', items: a.items, st: ls, ring: true, pickKey: k, onPick: () => setPlat(k) }));
+  }
+  const nl = GAMES.filter(g => !g.liveAny);
+  const nlSt = [];
+  const isGo = p => /^đã bị gỡ/i.test(p.tt);
+  const c0 = nl.filter(g => !g.plats.length).length;
+  const cGo = nl.filter(g => g.plats.some(isGo)).length;
+  const cRej = nl.filter(g => !g.plats.some(isGo) && g.plats.some(p => p.tone === 'bad')).length;
+  const cWait = nl.length - c0 - cGo - cRej;
+  if (c0) nlSt.push(['Chưa gửi trang nào', { n: c0, tone: 'none' }]);
+  if (cWait > 0) nlSt.push(['Đang chờ', { n: cWait, tone: 'warn' }]);
+  if (cRej) nlSt.push(['Bị từ chối', { n: cRej, tone: 'bad' }]);
+  if (cGo) nlSt.push(['Bị gỡ', { n: cGo, tone: 'bad' }]);
+  cabs.append(cab({ name: 'Chưa chơi được', tag: 'ở trang nào', count: nl.length, unit: 'game', light: nl.length ? 'warn' : 'good', items: nl.map(g => ({ g, p: null })), st: nlSt, empty: 'game nào cũng chơi được', pickKey: 'cho', onPick: () => setFilter('cho') }));
+  b.append(cabs);
+  const soon = ['Poki', 'GameDistribution', 'Yandex Games'].filter(n => !agg.has(platKey(n)));
+  if (soon.length) b.append(h('div', { class: 'soon' }, h('span', { class: 'lb' }, 'Sắp có:'), soon.map(n => h('span', { class: 's' }, n))));
+  b.append(srcLine(['Playgama MCP', 'CrazyGames', 'Hồ sơ nộp Playgama trên máy']));
+}
+
+/* ---------- 03 money + players ---------- */
+function renderKhach() {
+  const b = $('#b-khach');
+  const likeKnown = GAMES.filter(g => g.thich != null), dislikeKnown = likeKnown.filter(g => g.kthich != null);
+  b.append(ans([moneyKnown ? ['Tiền thu ', B(usd(moneyTotal) + ' đô'), '. '] : ['Tiền ', NA('chưa có số'), '. '],
+    plays != null || openers != null ? [plays != null ? [B(n0(plays)), ' lượt chơi'] : '', plays != null && openers != null ? ', ' : '', openers != null ? [B(n0(openers)), ' lượt mở game'] : '', '; ', enough ? enough + ' game đủ ' + NGUONG + ' lượt chơi để chấm.' : 'chưa game nào đủ ' + NGUONG + ' lượt chơi để chấm.'] : 'Chưa có số khách chơi.']));
+
+  // time per play (Playgama's own number), weighted by plays
+  const pt = GAMES.filter(g => g.giay != null && g.lc > 0);
+  const wN = sum(pt.map(g => g.lc));
+  const avg = pt.length && wN > 0 ? sum(pt.map(g => g.giay * g.lc)) / wN : null;
+  const best = pt.slice().sort((x, y) => y.giay - x.giay)[0];
+  const pub = ng('Trang công khai Playgama');
+  const likeWhy = pub && /javascript/i.test(pub.ghi_chu || '') ? 'Trang Playgama chỉ hiện lượt thích sau khi tải xong, máy chưa đọc được.' : 'Máy chưa đọc được lượt thích.';
+  const tile = (cls, k, v, sub, tip) => h('div', { class: 'tile ' + cls, title: tip || null }, h('p', { class: 't-k' }, k), v, sub ? h('p', { class: 't-s' }, sub) : null);
+  const val = (v, unit) => h('p', { class: 't-v' }, v, unit ? h('small', null, unit) : null);
+  const naV = () => h('p', { class: 't-v na' }, 'chưa có số');
+  b.append(h('div', { class: 'tiles blk' },
+    tile('wide', 'Tiền thu', moneyKnown ? val(usd(moneyTotal), 'đô') : naV(), moneyKnown ? 'từ ' + moneyGames + ' game' : 'máy chưa đọc được doanh thu từ trang nào'),
+    tile('', 'Lượt chơi thật', plays != null ? val(n0(plays)) : naV(), lcKnown.length ? 'Playgama tính' : null, lcKnown.length ? 'Tổng của ' + lcKnown.length + ' game: lượt mở game thành lượt chơi, đúng số Playgama dùng để xét vào danh mục' : null),
+    tile('r', 'Lượt mở game', openers != null ? val(n0(openers)) : naV(), ncKnown.length ? 'Playgama đếm' : null, ncKnown.length ? 'Tổng của ' + ncKnown.length + ' game: mỗi lần game được mở, kể cả người bỏ đi ngay' : null),
+    tile('', 'Thời gian mỗi lượt', avg != null ? val(mmss(avg), 'phút') : naV(), avg != null ? 'lâu nhất ' + mmss(best.giay) + ' (' + best.ten + ')' : 'Playgama chưa tính', avg != null ? 'Trung bình mỗi lượt chơi thật, tính trên ' + n0(wN) + ' lượt của ' + pt.length + ' game; mốc vào danh mục của Playgama là 5:00 với Giải đố, Phản xạ, cao hơn với thể loại khác' : null),
+    tile('r', 'Lượt thích', likeKnown.length ? val(n0(sum(likeKnown.map(g => g.thich)))) : naV(), likeKnown.length ? (dislikeKnown.length ? n0(sum(dislikeKnown.map(g => g.kthich))) + ' không thích' : 'chưa có số không thích') : 'máy chưa đọc được', likeKnown.length ? null : likeWhy)));
+
+  const items = GAMES.filter(g => g.n > 0).sort((x, y) => (y.n - x.n) || ((y.lc || 0) - (x.lc || 0)) || x.ten.localeCompare(y.ten, 'vi')).slice(0, 10);
+  if (items.length) {
+    const top = items[0];
+    const others = hasPl - items.length, zero = GAMES.filter(g => g.n === 0).length;
+    b.append(more('Lượt chơi từng game', items.length + ' game có lượt chơi thật', [
+      h('div', { class: 'legend' }, h('span', { class: 'k' }, h('i', { class: 'sw-bar' }), 'Lượt chơi thật (số đậm)'), h('span', { class: 'k' }, h('i', { class: 'sw-dot' }), 'Lượt mở game (số nhạt)')),
+      chart(drawPlayers(items)),
+      h('p', { class: 'note' }, 'Mốc để chấm là ' + NGUONG + ' lượt chơi thật, mốc vào danh mục Playgama là 100; game nhiều nhất ' + (top.n >= NGUONG ? 'có ' : 'mới có ') + n0(top.n) + ' lượt.'
+        + (others > 0 ? ' ' + others + ' game khác cũng có lượt chơi (xem ở mục 06).' : '') + (zero > 0 ? ' Còn ' + zero + ' game trên Playgama chưa có lượt chơi thật nào.' : ''))]));
+  } else b.append(h('p', { class: 'note' }, measured ? 'Chưa game nào có lượt chơi thật.' : 'Chưa game nào lên trang có số lượt chơi.'));
+  b.append(srcLine(PG_SRC, moneyKnown ? null : 'tiền: chưa có nguồn'));
+}
+
+/* ---------- 04 opportunity ---------- */
+// progress to Playgama's catalog targets (sandbox card): plays, time per play, ad shows per play
+function mocLine(g, full) {
+  const m = g.moc;
+  if (!m) return null;
+  const part = (x, f, unit) => x.moc == null ? null : [B((x.gt == null ? '0' : f(x.gt)) + '/' + f(x.moc)), unit, x.dat ? ' (đạt)' : ''];
+  const parts = [part(m.luot, n0, ' lượt chơi'), part(m.giay, mmss, ' mỗi lượt'), full ? part(m.qc, v => n1(v), ' quảng cáo mỗi lượt') : null].filter(Boolean);
+  if (m.mo) return h(full ? 'span' : 'p', { class: full ? null : 'c-s tnum' }, 'Đã đạt mốc: Playgama mở danh mục cho game này');
+  let tail = '';
+  if (full && m.tl) tail += ' (mốc của thể loại ' + m.tl + ')';
+  if (full && m.het) { const d = new Date(m.het); if (!isNaN(d)) tail += '. Phòng thử giữ tới ' + d.getDate() + '/' + (d.getMonth() + 1) + ' nếu chưa đạt mốc'; }
+  return h(full ? 'span' : 'p', { class: full ? null : 'c-s tnum' }, full ? '' : 'Mốc danh mục: ', joinParts(parts, ' · '), tail);
+}
+const LADDER = [['pg-dm', 'Playgama danh mục'], ['cg', 'CrazyGames'], ['poki', 'Poki'], ['gd', 'GameDistribution'], ['ya', 'Yandex Games']];
+const nextPlats = g => LADDER.filter(([k]) => !g.plats.some(p => p.key === k && p.tone !== 'bad')).slice(0, 2).map(([, t]) => t);
+function renderCoHoi() {
+  const b = $('#b-co-hoi');
+  const good = OPP, cands = NEAR.slice(0, 3), SHOW = 3;
+  const low = GAMES.filter(g => g.op === 'thap');
+  if (good.length) {
+    const np = nextPlats(good[0]);
+    b.append(ans([B(n0(good.length)), ' game có cơ hội. Tốt nhất: ', joinParts(good.slice(0, 3).map(g => [g.ten, ' (', OP[g.op].t.replace('Cơ hội ', ''), ')']), ', '), good.length > 3 ? ' và ' + (good.length - 3) + ' game khác' : '', '. ',
+      np.length ? ['Nhân ra: ', B(np.join(', rồi '))] : 'Đã có ở mọi trang đang theo dõi', '.']));
+  } else if (cands.length) {
+    const topN = cands[0].n, tops = NEAR.filter(g => g.n === topN);
+    b.append(ans(['Chưa game nào đủ số để chấm, nên chưa nhân ra trang nào. Gần nhất: ', tops.slice(0, 3).map(g => g.ten).join(', '), ' (', B(topN + '/' + NGUONG), ' lượt chơi thật).']));
+  } else b.append(ans([enough ? 'Có game đủ số nhưng chưa chấm được (chờ Playgama tính thời gian mỗi lượt). Chưa nhân ra trang nào.' : 'Chưa game nào có lượt chơi thật để chấm, nên chưa nhân ra trang nào.']));
+  if (good.length) {
+    b.append(h('ul', { class: 'cands blk' }, good.slice(0, SHOW).map(g => h('li', { class: 'cand' }, cover(g, 34),
+      h('div', null, h('div', { class: 'c-top' }, h('span', { class: 'c-name' }, g.ten), opPill(g)),
+        h('p', { class: 'c-s tnum' }, (g.giay != null ? mmss(g.giay) + ' mỗi lượt · ' : '') + n0(g.n) + ' lượt chơi thật'), mocLine(g),
+        h('p', { class: 'c-next' }, 'Nhân ra: ' + (nextPlats(g).join(', rồi ') || 'đã có ở mọi trang đang theo dõi')))))));
+    if (good.length > SHOW) b.append(h('button', { type: 'button', class: 'linkbtn', onclick: () => { setFilter('opp'); jumpTo('game', false); } }, 'Xem cả ' + good.length + ' game có cơ hội', icon('right', 'ic s')));
+  } else if (cands.length) {
+    b.append(h('div', { class: 'sub-row blk' }, h('h3', { class: 'sub-h' }, 'Gần đủ số nhất'),
+      h('button', { type: 'button', class: 'linkbtn', onclick: () => { S.sort = 'choi'; S.f = 'all'; S.plat = null; S.limit = PAGE; renderList(); jumpTo('game', false); } }, 'Xem theo lượt chơi', icon('right', 'ic s'))));
+    b.append(h('ul', { class: 'cands' }, cands.map(g => h('li', { class: 'cand', title: n0(g.lc) + ' lượt chơi thật' + (g.nc != null ? ', ' + n0(g.nc) + ' lượt mở game' : '') + (g.giay != null ? ' · ' + mmss(g.giay) + ' mỗi lượt' : '') }, cover(g, 34),
+      h('div', null, h('div', { class: 'c-top' }, h('span', { class: 'c-name' }, g.ten), h('span', { class: 'c-need tnum' }, g.n + '/' + NGUONG + ' lượt · cần thêm ' + n0(NGUONG - g.n))),
+        h('div', { class: 'meter', role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': NGUONG, 'aria-valuenow': g.n, 'aria-label': g.ten + ': ' + g.n + ' trên ' + NGUONG + ' lượt chơi thật' }, g.n > 0 ? h('i', { style: 'width:' + Math.min(100, g.n / NGUONG * 100) + '%' }) : null), mocLine(g))))));
+  }
+  const fixes = GAMES.filter(g => g.dx && g.dx.muc === 'can_sua' && g.dx.sua);
+  if (fixes.length) b.append(h('div', { class: 'sub-row blk' }, h('h3', { class: 'sub-h' }, 'Máy đề xuất sửa (theo số người chơi)')),
+    h('ul', { class: 'cands' }, fixes.slice(0, 5).map(g => h('li', { class: 'cand' }, cover(g, 34),
+      h('div', null, h('div', { class: 'c-top' }, h('span', { class: 'c-name' }, g.ten)),
+        h('p', { class: 'c-s' }, g.dx.choBo), h('p', { class: 'c-next' }, 'Sửa: ' + g.dx.sua))))));
+  if (low.length) b.append(h('p', { class: 'note' }, low.length + ' game đủ số nhưng thấp (người chơi rời nhanh, dưới 3/4 mốc thời gian): ' + low.slice(0, 4).map(g => g.ten).join(', ') + (low.length > 4 ? ' và ' + (low.length - 4) + ' game khác' : '') + '.'));
+  b.append(more('Cách chấm', 'theo mốc chính thức của Playgama', h('ol', { class: 'rule-l' },
+    h('li', null, 'Game được ', B('gửi duyệt vào danh mục'), ' (nơi ra tiền, phát sang web đối tác) khi trong 30 ngày đạt đủ 3 mốc: ', B('100 lượt chơi thật'), '; thời gian mỗi lượt đạt mốc của thể loại (Giải đố, Phản xạ, Lái xe 5:00; Hành động 5:30; Chữ 8:00; Ghép đồ, Quản lý 9:00; Ghép cặp 9:30; Chiến thuật 10:00); từ 0,3 lần quảng cáo mỗi lượt. Đủ mốc thì bạn bấm gửi duyệt; Playgama kiểm duyệt 3–5 ngày làm việc và có quyền từ chối (điều khoản 11.12).'),
+    h('li', null, 'Lượt chơi thật = lượt mở game thành lượt chơi, Playgama tự tính. Dưới ', B(NGUONG + ' lượt'), ': chưa đủ số, chưa chấm (tài liệu Playgama: dưới 30 chỉ là tín hiệu sớm).'),
+    h('li', null, 'Từ ', NGUONG, ' lượt: thời gian mỗi lượt đạt mốc là ', B('cao'), ' (chỉ còn thiếu lượt chơi), từ 3/4 mốc là ', B('vừa'), ', dưới 3/4 là thấp.'),
+    h('li', null, 'Game cao: thêm người chơi cho đủ 100 lượt để được gửi duyệt danh mục, rồi làm thêm game cùng kiểu chơi. Game vừa: sửa vài phút đầu rồi đo lại.'))));
+  b.append(srcLine(PG_SRC, 'cách chấm của bảng'));
+}
+
+/* ---------- 05 batch detail + history ---------- */
+function renderDangLam() {
+  const b = $('#b-dang-lam');
+  const dl = D.dang_lam && typeof D.dang_lam === 'object' ? D.dang_lam : null;
+  const left = h('div', null), right = h('div', null);
+  if (!dl) left.append(ans(['Không có đợt làm game nào đang chạy.']));
+  else {
+    const x = batchInfo(dl);
+    if (x.pha) left.append(ans([x.xong ? 'Vừa xong' : 'Đang làm', dl.bat_dau ? ' (bắt đầu ' + gio(dl.bat_dau) + ')' : '', ': ', B(x.pt + '%'), ', ', doneTxt(x), '.']));
+    else if (x.xong) left.append(ans(['Đợt gần nhất', dl.bat_dau ? ' (bắt đầu ' + gio(dl.bat_dau) + ')' : '', ' đã xong', x.pt < 100 ? [' ', B(x.pt + '%')] : '', ': ', B(n0(x.nGame)), ' game mới',
+      x.nLive ? (x.nLive === x.nGame ? ', cả ' + x.nGame + ' đã lên phòng thử Playgama.' : ', ' + x.nLive + ' đã lên phòng thử Playgama.') : '.']));
+    else if (!x.rows.length) left.append(ans(['Có đợt đang chạy', dl.bat_dau ? ' (bắt đầu ' + gio(dl.bat_dau) + ')' : '', ' nhưng ', NA('chưa có số từng việc'), '.']));
+    else left.append(ans(['Đang làm: ', B(x.pt + '%'), ', ', doneTxt(x), '.']));
+    if (x.rows.length) left.append(more('Xem ' + x.rows.length + (x.pha ? ' bước' : ' việc của đợt'), x.pha ? x.phaDone + '/' + x.phaN + ' bước xong' : x.nGame ? x.nDone + '/' + x.nGame + ' game xong' : 'đang chọn ý', batchRows(x.rows), { id: 'dot-chi-tiet' }));
+  }
+  const per = new Map(); for (const g of GAMES) if (g.day) per.set(g.day, (per.get(g.day) || 0) + 1);
+  const keys = [...per.keys()].sort();
+  if (keys.length) {
+    const last = TODAY && TODAY > keys[keys.length - 1] ? TODAY : keys[keys.length - 1];
+    const days = []; for (let k = keys[0], guard = 0; k <= last && guard < 400; k = addDays(k, 1), guard++) days.push(k);
+    const pts = days.slice(-14).map(k => ({ key: k, label: dm(k), v: per.get(k) || 0, em: k === TODAY }));
+    const total = sum([...per.values()]);
+    right.append(chartBox('Game làm mỗi ngày', n0(total) + ' game trong ' + days.length + ' ngày',
+      chart(drawCols(pts, { h: 120, label: 'Số game làm mỗi ngày', fmt: v => n0(v || 0), title: d => d.label + ' (' + thu(d.key) + '): ' + n0(d.v) + ' game' }))));
+  }
+  // the source line follows the last block (under the chart on wide screens) instead of floating below a gap
+  (keys.length ? right : left).append(srcLine(['Nhật ký workflow', 'Thư mục game']));
+  b.append(h('div', { class: 'two-col' }, left, right));
+}
+
+/* ---------- 06 game list: one compact row per game, details on tap ---------- */
+const S = { q: '', f: 'all', plat: null, sort: 'moi', limit: PAGE };
+const FILTERS = [
+  { k: 'all', t: 'Tất cả', test: () => true },
+  { k: 'live', t: 'Đang chơi được', test: g => g.liveAny },
+  { k: 'cho', t: 'Chưa chơi được', test: g => !g.liveAny, tip: 'Chưa chơi được ở trang nào: chưa gửi, đang chờ, bị từ chối hoặc bị gỡ' },
+  { k: 'opp', t: 'Có cơ hội', test: g => g.opp, tip: 'Chấm được mức cao hoặc vừa' },
+  { k: 'attn', t: 'Cần xem', test: g => g.attn, tip: 'Bị từ chối, bị gỡ, có việc chờ bạn, hoặc cơ hội thấp' }
+];
+const cmpName = (a, b) => a.ten.localeCompare(b.ten, 'vi');
+const byNew = (a, b) => (b.day || '').localeCompare(a.day || '') || ((tms(b.pgTu) || 0) - (tms(a.pgTu) || 0)) || cmpName(a, b);
+const byPlays = (a, b) => ((b.lc == null ? -1 : b.lc) - (a.lc == null ? -1 : a.lc)) || ((b.nc == null ? -1 : b.nc) - (a.nc == null ? -1 : a.nc)) || cmpName(a, b);
+const rowCache = new Map();
+let UI = {}, openRow = null, LV = { key: null, n: 0, ul: null, day: undefined };
+/* ---------- play-test (owner 22/11/2026: "bấm trong trang quản lý, không mở game ra chơi thử được à") ----------
+   The game's own single-file build, locked with this page's key (cong.html keeps it in localStorage), opened in a full-screen
+   frame inside this page. Works before the game is on any portal and adds no plays to Playgama's numbers. */
+const KHOA_TRANG = 'gold-games-khoa';
+let player = null;
+function closePlayer(fromHistory) {
+  if (!player) return;
+  const p = player; player = null;
+  p.el.remove();
+  if (p.url) URL.revokeObjectURL(p.url);
+  document.documentElement.classList.remove('playing');
+  if (!fromHistory && history.state && history.state.choiThu) history.back();
+  if (p.from && p.from.isConnected) p.from.focus({ preventScroll: true });
+}
+async function playTest(g) {
+  if (player || !g.choi) return;
+  const msg = h('p', { class: 'pv-msg' }, 'Đang tải game' + (g.choi.mb ? ' (' + n1(g.choi.mb) + ' MB)' : '') + '…');
+  const x = h('button', { type: 'button', class: 'pv-x', onclick: () => closePlayer(false) }, icon('x', 'ic'), 'Đóng');
+  const el = h('div', { class: 'pv', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Chơi thử ' + g.ten },
+    h('div', { class: 'pv-bar' }, h('span', { class: 'pv-t' }, 'Chơi thử · ', B(g.ten)), x), msg);
+  const me = { el, url: null, from: document.activeElement };
+  player = me;
+  document.body.append(el);
+  document.documentElement.classList.add('playing');
+  try { history.pushState({ choiThu: 1 }, ''); } catch (e) { /* the back button then simply leaves the page */ }
+  x.focus({ preventScroll: true });
+  try {
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(KHOA_TRANG) || 'null'); } catch (e) { /* storage blocked */ }
+    if (!o || typeof o.k !== 'string') throw new Error('khoa');
+    const key = await crypto.subtle.importKey('raw', Uint8Array.from(atob(o.k), c => c.charCodeAt(0)), 'AES-GCM', false, ['decrypt']);
+    const r = await fetch(g.choi.tep);
+    if (!r.ok) throw new Error('tai');
+    const buf = new Uint8Array(await r.arrayBuffer());
+    const html = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.subarray(0, 12) }, key, buf.subarray(12));
+    if (player !== me) return;                              // closed while loading
+    me.url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    msg.remove();
+    el.append(h('iframe', { class: 'pv-f', src: me.url, title: g.ten, allow: 'autoplay; fullscreen' }));
+  } catch (e) {
+    if (player !== me) return;
+    msg.textContent = e && e.message === 'khoa'
+      ? 'Không mở được: trình duyệt này chưa nhớ khoá của trang. Bấm Đóng, đăng xuất rồi đăng nhập lại.'
+      : 'Không tải được game. Kiểm tra mạng, bấm Đóng rồi thử lại.';
+  }
+}
+window.addEventListener('popstate', () => { if (player) closePlayer(true); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && player) closePlayer(false); });
+const tryBtn = (g, cls) => h('button', { type: 'button', class: cls, 'aria-label': 'Chơi thử ' + g.ten, onclick: () => playTest(g) }, icon('play', 'ic s'), 'Chơi thử');
+
+const kv = (k, v, wide) => h('div', { class: 'kv' + (wide ? ' w' : '') }, h('dt', null, k), h('dd', null, v));
+// the opening view of a game: what it is, its numbers, where it is, what comes next (the name is already in the row)
+function fillDetails(det, g) {
+  const items = [];
+  if (g.choi) det.append(h('div', { class: 'g-try' }, tryBtn(g, 'try-btn'),
+    h('span', { class: 'try-n' }, 'Bản riêng, mở ngay trong trang này. Không tính vào lượt chơi trên Playgama.')));
+  const what = g.viName ? [B(g.viName), g.desc ? ': ' + g.desc : ''] : g.desc ? ucFirst(g.desc) : NA('chưa ghi');
+  items.push(kv('Game thế nào', [what, h('span', { class: 'sub' }, (g.genre || 'chưa ghi thể loại') + ' · ' + (g.day ? 'làm ' + dm(g.day) + ' (' + thu(g.day) + ')' : 'chưa ghi ngày làm'))]));
+  let nums;
+  if (g.n == null && g.thich == null) nums = NA(g.live ? 'Chưa đọc được số người chơi.' : 'Chưa có số: chưa lên trang nào có người chơi.');
+  else {
+    const known = [], unknown = [];
+    if (g.lc != null) known.push([B(n0(g.lc)), ' lượt chơi thật']); else unknown.push('lượt chơi');
+    if (g.nc != null) known.push([B(n0(g.nc)), ' lượt mở game']); else unknown.push('lượt mở game');
+    if (g.giay != null) known.push([B(mmss(g.giay)), ' mỗi lượt']); else if (g.lc) unknown.push('thời gian mỗi lượt');
+    if (g.thich != null) known.push([B(n0(g.thich)), ' thích', g.kthich != null ? ', ' + n0(g.kthich) + ' không thích' : '']); else unknown.push('lượt thích');
+    nums = [joinParts(known, ' · '), unknown.length ? h('span', { class: 'sub' }, 'Chưa có số: ' + unknown.join(', ') + '.') : null];
+  }
+  items.push(kv('Người chơi', nums));
+  if (g.moc) items.push(kv('Mốc vào danh mục', mocLine(g, true)));
+  if (g.dx) items.push(kv('Người chơi bỏ ở đâu', [g.dx.choBo, g.dx.phien != null ? h('span', { class: 'sub' }, 'Bản đang chạy: ' + n0(g.dx.phien) + ' lượt mở game' + (g.dx.tu ? ' từ ' + dm(g.dx.tu) : '') + '. Máy đọc mỗi giờ.') : null]));
+  if (g.dx && g.dx.sua) items.push(kv('Đề xuất sửa', [g.dx.sua, h('span', { class: 'sub' }, 'Máy tự sửa trong lượt sửa game 07:00 rồi đo lại.')]));
+  if (g.tien != null) items.push(kv('Tiền thu', usd(g.tien) + ' đô'));
+  items.push(kv('Các trang', g.plats.length ? g.plats.map(p => h('span', { class: 'pl' }, platPill(p))) : NA('Chưa lên trang nào.')));
+  if (g.next) items.push(kv('Bước tiếp', g.next));
+  if (g.opWhy) items.push(kv('Vì sao ' + (OP[g.op] ? lcFirst(OP[g.op].t) : 'chưa chấm'), g.opWhy));
+  items.push(kv('Nguồn', h('p', { class: 'src' }, (g.soNguon ? 'Số: ' + g.soNguon + (g.soLuc ? ' · đọc lúc ' + gio(g.soLuc) : '') + ' · ' : '') + 'thư mục ' + (g.id || '–')), true));
+  det.append(h('dl', { class: 'g-dl' }, items));
+}
+function setRowOpen(r, open) {
+  r.btn.setAttribute('aria-expanded', String(open));
+  r.li.classList.toggle('open', open);
+  if (open && !r.filled) { fillDetails(r.det, r.g); r.filled = true; }
+  r.det.hidden = !open;
+}
+function toggleRow(r) {
+  const open = r.btn.getAttribute('aria-expanded') !== 'true';
+  if (open && openRow && openRow !== r) {
+    // keep the tapped row still while the previously open one folds away
+    const before = r.li.getBoundingClientRect().top;
+    setRowOpen(openRow, false);
+    const shift = r.li.getBoundingClientRect().top - before;
+    if (Math.abs(shift) > 1) window.scrollTo({ top: window.scrollY + shift, behavior: 'auto' });
+  }
+  setRowOpen(r, open);
+  openRow = open ? r : null;
+}
+function buildRow(g) {
+  const st = mainStatus(g);
+  const li = h('li', { class: 'grow' + (g.choi || g.link ? ' has-play' : '') });
+  const det = h('div', { class: 'g-det', id: 'det-' + g.key, hidden: true });
+  // plays: on phones it sits after the name (line 1), on wider screens in its own aligned column (line 2)
+  const playsEl = cls => g.lc != null ? h('span', { class: 'g-pl tnum ' + cls }, h('b', null, n0(g.lc)), ' lượt chơi')
+    : cls === 'pl-b' ? h('span', { class: 'g-pl ' + cls }, NA('chưa có số'))
+    : g.live ? h('span', { class: 'g-pl ' + cls }, NA('chưa đọc được lượt chơi')) : null;
+  // calm by default: a healthy state is a dot + words, only states that need a look get a coloured pill;
+  // "chưa đủ số" is quiet text, a graded chance (cao / vừa / thấp) gets a pill
+  const graded = g.op === 'cao' || g.op === 'vua' || g.op === 'thap';
+  const opQuiet = OP[g.op] ? lcFirst(OP[g.op].t) : (g.op ? String(g.op) : 'chưa chấm');
+  const btn = h('button', { type: 'button', class: 'g-btn', id: 'gb-' + g.key, 'aria-expanded': 'false', 'aria-controls': det.id, title: g.ten },
+    cover(g, 40),
+    h('span', { class: 'g-l1' }, h('span', { class: 'g-name' }, g.ten), g.viName ? h('span', { class: 'g-vi' }, g.viName) : null, playsEl('pl-a')),
+    h('span', { class: 'g-l2' },
+      h('span', { class: 'sl s1' }, pill(st.c + (st.c === 'good' || st.c === 'none' ? ' flat' : ''), st.t, st.tip)),
+      h('span', { class: 'sl s2' }, playsEl('pl-b')),
+      h('span', { class: 'sl s3' }, graded ? opPill(g) : h('span', { class: 'g-op', title: g.opWhy || null }, opQuiet))),
+    icon('down', 'ic g-ch'));
+  const r = { g, li, btn, det, filled: false };
+  btn.addEventListener('click', () => toggleRow(r));
+  li.addEventListener('keydown', e => { if (e.key === 'Escape' && r.btn.getAttribute('aria-expanded') === 'true') { toggleRow(r); r.btn.focus(); } });
+  // row action from tablet width up: "Chơi thử" (private build, works before any portal) or else the portal's "Chơi" link
+  const act = g.choi ? tryBtn(g, 'play') : g.link ? h('a', { class: 'play', href: g.link, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Chơi ' + g.ten + ' (mở trang mới)' }, 'Chơi', icon('arrow', 'ic s')) : null;
+  add(li, [h('div', { class: 'g-head' }, btn, act), det]);
+  return r;
+}
+const rowOf = g => { let r = rowCache.get(g.key); if (!r) { r = buildRow(g); rowCache.set(g.key, r); } return r.li; };
+function baseSet() {
+  const words = norm(S.q).trim().split(/\s+/).filter(Boolean);
+  return GAMES.filter(g => (!S.plat || g.plats.some(p => p.key === S.plat)) && words.every(w => g.search.includes(w)));
+}
+function renderList() {
+  const base = baseSet();
+  const f = FILTERS.find(x => x.k === S.f) || FILTERS[0];
+  const arr = base.filter(f.test).sort(S.sort === 'choi' ? byPlays : byNew);
+  for (const x of FILTERS) { const c = UI.fbtn[x.k], n = base.filter(x.test).length; c.setAttribute('aria-pressed', String(x.k === S.f)); c.querySelector('.c').textContent = n; c.classList.toggle('zero', !n); }
+  for (const btn of UI.sortBtns) btn.setAttribute('aria-pressed', String(btn.dataset.sort === S.sort));
+  document.querySelectorAll('.cab').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.pick === S.plat || (c.dataset.pick === 'cho' && S.f === 'cho' && !S.plat))));
+  UI.ptag.hidden = !S.plat;
+  if (S.plat) UI.ptag.firstChild.textContent = 'Trang: ' + (PLAT_NAME[S.plat] || S.plat.replace(/^x:/, ''));
+  UI.count.textContent = 'Đang xem ' + arr.length + '/' + GAMES.length + ' game';
+  const shown = arr.slice(0, S.limit);
+  const per = new Map(); if (S.sort === 'moi') for (const g of arr) per.set(g.day, (per.get(g.day) || 0) + 1);
+  // same view, more rows asked for ("Xem thêm"): only the new rows are added, so paging deep into 500+ games stays quick
+  const key = [S.q, S.f, S.plat, S.sort].join('\n');
+  const grow = LV.key === key && LV.ul && LV.ul.isConnected && shown.length > LV.n;
+  const frag = document.createDocumentFragment();
+  let ul = grow ? LV.ul : null, last = grow ? LV.day : undefined;
+  for (const g of grow ? shown.slice(LV.n) : shown) {
+    if (!ul || (S.sort === 'moi' && g.day !== last)) {
+      last = g.day;
+      if (S.sort === 'moi') frag.append(h('h3', { class: 'gday' }, h('b', null, g.day ? dm(g.day) : 'Chưa ghi ngày'), g.day ? h('span', null, thu(g.day) + (isToday && g.day === TODAY ? ' · hôm nay' : '')) : null, h('span', { class: 'c' }, per.get(g.day) + ' game')));
+      ul = h('ul', { class: 'glist' }); frag.append(ul);
+    }
+    ul.append(rowOf(g));
+  }
+  if (!arr.length) {
+    const why = S.q.trim() ? 'Không thấy game nào khớp “' + S.q.trim() + '”.' : S.f === 'opp' ? 'Chưa game nào có cơ hội: cần từ ' + NGUONG + ' lượt chơi thật và thời gian mỗi lượt từ 3/4 mốc vào danh mục của Playgama.' : S.f === 'attn' ? 'Không có game nào cần xem.' : S.f === 'cho' ? 'Game nào cũng đã chơi được ở ít nhất một trang.' : 'Không có game nào.';
+    frag.append(h('p', { class: 'empty' }, why, (S.q || S.f !== 'all' || S.plat) ? h('button', { type: 'button', onclick: () => { S.q = ''; UI.q.value = ''; S.f = 'all'; S.plat = null; S.limit = PAGE; renderList(); } }, 'Xem tất cả') : null));
+  }
+  if (grow) UI.list.append(frag); else UI.list.replaceChildren(frag);
+  LV = { key, n: shown.length, ul, day: last };
+  const rest = arr.length - shown.length;
+  UI.more.hidden = rest <= 0;
+  if (rest > 0) UI.more.replaceChildren('Xem thêm ' + Math.min(PAGE, rest) + ' game', h('span', { class: 'c' }, '· còn ' + rest));
+}
+function setFilter(k) { S.f = k; S.plat = null; S.limit = PAGE; renderList(); }
+function setPlat(k) { S.plat = k; S.f = 'all'; S.limit = PAGE; renderList(); }
+function renderGame() {
+  const b = $('#b-game');
+  b.append(ans([B(n0(made)), ' game: ', B(n0(GAMES.filter(g => g.liveAny).length)), ' chơi được, ', B(n0(notLive)), ' chưa chơi được', attnN ? [', ', B(n0(attnN)), ' cần xem'] : '', '. Bấm vào game để xem chi tiết.']));
+  const q = h('input', { type: 'search', placeholder: 'Tìm game…', 'aria-label': 'Tìm game theo tên', autocomplete: 'off', enterkeyhint: 'search' });
+  let tmr; q.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(() => { S.q = q.value; S.limit = PAGE; renderList(); }, 120); });
+  const fbtn = {};
+  const chips = h('div', { class: 'ctl-row', role: 'group', 'aria-label': 'Lọc game' }, FILTERS.map(x => { const c = h('button', { type: 'button', class: 'fchip', 'aria-pressed': 'false', title: x.tip || null, onclick: () => setFilter(x.k) }, x.t, h('span', { class: 'c' }, '')); fbtn[x.k] = c; return c; }));
+  const sortBtns = [['moi', 'Mới nhất'], ['choi', 'Nhiều lượt chơi']].map(([k, t]) => { const btn = h('button', { type: 'button', 'aria-pressed': 'false', onclick: () => { S.sort = k; S.limit = PAGE; renderList(); } }, t); btn.dataset.sort = k; return btn; });
+  const ptag = h('button', { type: 'button', class: 'ptag', hidden: true, 'aria-label': 'Bỏ lọc theo trang', onclick: () => { S.plat = null; S.limit = PAGE; renderList(); } }, 'Trang', icon('x', 'ic s'));
+  const count = h('span', { 'aria-live': 'polite' });
+  const list = h('div', { class: 'glists' });
+  const moreBtn = h('button', { type: 'button', class: 'morebtn', hidden: true, onclick: () => { S.limit += PAGE; renderList(); } });
+  UI = { q, fbtn, sortBtns, ptag, count, list, more: moreBtn };
+  b.append(h('div', { class: 'ctl' }, h('label', { class: 'search' }, icon('search'), q), chips,
+    h('div', { class: 'ctl-bot' }, h('div', { class: 'sortg', role: 'group', 'aria-label': 'Sắp xếp' }, sortBtns), h('div', { class: 'ctl-state' }, count, ptag))), list, moreBtn,
+    srcLine(['Thư mục game', 'Playgama MCP', 'Trang công khai Playgama', 'CrazyGames', 'Ảnh bìa']));
+  renderList();
+}
+
+/* ---------- nút ↻ + tự cập nhật (chủ dự án 22/11/2026: "nên làm cái nút trong trang quản lý (kiểu cái nút xoay tròn, giống
+   reload ấy) nếu tôi bấm vào đó thì phải tự động cập nhật mới nhất cho tôi, còn không bấm thì cứ theo lịch 20 phút cập nhật
+   trang quản lý 1 lần") ----------
+   Bấm: gửi "lam-moi <mã>" vào kênh ntfy.sh ghi trong số đã khoá (D.lam_moi.kenh). Máy xưởng (tools/nut_lam_moi.py) trả
+   "nhan <mã> <giây ước>", gom số + đăng, rồi "xong <mã> <phiên bản>"; trang chờ ban.txt đúng phiên bản đó rồi tải lại.
+   Không bấm: máy đăng 20 phút/lần; trang xem ban.txt mỗi phút và lúc mở lại tab, có bản mới thì tự tải lại
+   (đang chơi thử hoặc đang gõ ô tìm thì đợi xong). Tải lại giữ chỗ đang xem: cuộn, ô tìm, bộ lọc, game đang mở, việc đang mở. */
+window.GOLD_TU_CAP_NHAT = true;                 // cong.html: trang tự lo cập nhật, không gắn nút "Có số mới" kiểu cũ
+const BAN = typeof window.GOLD_BAN === 'string' ? window.GOLD_BAN : null;   // phiên bản số đang hiện (cong.html chèn)
+const KENH = D.lam_moi && typeof D.lam_moi.kenh === 'string' && /^https:\/\/ntfy\.sh\/[A-Za-z0-9_-]{20,64}$/.test(D.lam_moi.kenh) ? D.lam_moi.kenh : null;
+const GIU = 'gold-giu';
+const LM = { dang: false, moi: false };
+const ngu = ms => new Promise(r => setTimeout(r, ms));
+const mmss = s => Math.floor(s / 60) + ':' + pad(Math.floor(s % 60));
+async function banTrenTrang() {
+  try { const r = await fetch('ban.txt?t=' + Date.now(), { cache: 'no-store' }); return r.ok ? ((await r.text()).trim() || null) : null; } catch (e) { return null; }
+}
+function taiLai(ly) {
+  try { sessionStorage.setItem(GIU, JSON.stringify({ t: Date.now(), ly, y: Math.round(window.scrollY), row: openRow && openRow.g.id ? openRow.g.id : null, viec: [...document.querySelectorAll('#viec details.task[open]')].map(d => d.dataset.k), q: S.q, f: S.f, plat: S.plat, sort: S.sort, limit: S.limit })); } catch (e) { /* storage blocked: reload at the top */ }
+  location.reload();
+}
+let toastEl = null, toastTm = 0;
+function toast(text, o) {
+  o = o || {};
+  clearTimeout(toastTm);
+  if (!toastEl) { toastEl = h('div', { class: 'lm-toast', role: 'status', 'aria-live': 'polite' }); document.body.append(toastEl); }
+  toastEl.className = 'lm-toast' + (o.dang ? ' dang' : '') + (o.loi ? ' loi' : '');
+  toastEl.replaceChildren(...[o.dang ? icon('reload', 'ic') : null, h('span', null, text, o.sub ? h('span', { class: 't2' }, ' · ' + o.sub) : null)].filter(Boolean));
+  toastEl.hidden = false;
+  if (o.an) toastTm = setTimeout(() => { toastEl.hidden = true; }, o.an);
+}
+const lmBtn = $('#lamMoiBtn');
+function lmThoi(text, loi) {
+  LM.dang = false;
+  lmBtn.setAttribute('aria-busy', 'false');
+  toast(text, { loi, an: loi ? 16000 : 6000 });
+}
+async function lamMoi() {
+  if (LM.dang) return;
+  LM.dang = true;
+  lmBtn.setAttribute('aria-busy', 'true');
+  const hien = gioNgan(D.cap_nhat) || 'chưa rõ giờ';
+  if (!KENH) {                                  // số cũ chưa có kênh: chỉ xem máy đã đăng bản mới hơn chưa
+    const b = await banTrenTrang();
+    if (b && BAN && b !== BAN) { taiLai('bam'); return; }
+    lmThoi('Trang đang hiện bản mới nhất máy đã đăng (lúc ' + hien + '). Máy tự cập nhật 20 phút/lần.', false);
+    return;
+  }
+  const t0 = Date.now(), ma = Array.from(crypto.getRandomValues(new Uint8Array(6)), x => (x % 36).toString(36)).join('');
+  let nhan = false, uoc = 60, xong = null, loi = null, es = null;
+  toast('Đang gọi máy xưởng…', { dang: true });
+  try {
+    es = new EventSource(KENH + '/sse?since=' + Math.floor(t0 / 1000 - 2));
+    es.onmessage = ev => {
+      let m = null; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      const p = String((m && m.message) || '').trim().split(/\s+/);
+      if (p[1] !== ma) return;
+      if (p[0] === 'nhan') { nhan = true; uoc = Math.min(900, Math.max(20, +p[2] || 60)); }
+      else if (p[0] === 'xong') xong = p[2] || '';
+      else if (p[0] === 'loi') loi = p.slice(2).join(' ') || 'không rõ lỗi';
+    };
+  } catch (e) { es = null; }
+  try { await fetch(KENH, { method: 'POST', body: 'lam-moi ' + ma, referrerPolicy: 'no-referrer' }); } catch (e) { /* mất mạng: hết giờ chờ bên dưới */ }
+  try {
+    for (;;) {
+      await ngu(2000);
+      const giay = (Date.now() - t0) / 1000;
+      if (loi) { lmThoi('Máy xưởng báo lỗi khi lấy số (' + loi + '). Trang vẫn hiện số lúc ' + hien + '.', true); return; }
+      if (xong !== null) {
+        if (xong === BAN) { lmThoi('Số trên trang đã là mới nhất (lúc ' + hien + ').', false); return; }
+        const b = await banTrenTrang();
+        if ((b && b !== BAN) || giay > uoc + 300) { taiLai('bam'); return; }
+        toast('Máy đã lấy xong số · đang đưa lên trang', { dang: true, sub: mmss(giay) });
+      } else if (!nhan) {
+        if (giay > 12 && Math.floor(giay) % 6 < 2) {    // kênh trục trặc nhưng máy vẫn đăng (lịch 20 phút): nhận bản đó
+          const b = await banTrenTrang();
+          if (b && BAN && b !== BAN) { taiLai('bam'); return; }
+        }
+        if (giay > 40) { lmThoi('Máy xưởng chưa trả lời: có thể máy đang tắt hoặc mất mạng. Trang vẫn hiện số lúc ' + hien + '; máy chạy lại thì trang tự cập nhật.', true); return; }
+        toast('Đang gọi máy xưởng…', { dang: true, sub: mmss(giay) });
+      } else {
+        if (giay > uoc + 300) { lmThoi('Máy xưởng đã nhận lệnh nhưng quá ' + Math.round(giay / 60) + ' phút chưa xong. Trang vẫn hiện số lúc ' + hien + '.', true); return; }
+        toast((uoc > 100 ? 'Máy đang đọc số Playgama và tiến độ' : 'Máy đang gom số mới') + ', khoảng ' + Math.max(1, Math.round(uoc / 60)) + ' phút', { dang: true, sub: mmss(giay) });
+      }
+    }
+  } finally { if (es) es.close(); }
+}
+lmBtn.addEventListener('click', lamMoi);
+// tự cập nhật theo lịch máy đăng (20 phút/lần)
+const ranh = () => !player && !LM.dang && !(document.activeElement && document.activeElement.matches && document.activeElement.matches('input, textarea, select'));
+async function kiemBanMoi() {
+  if (!BAN || LM.dang || document.visibilityState !== 'visible') return;
+  const b = await banTrenTrang();
+  if (b && b !== BAN) LM.moi = true;
+  if (LM.moi && ranh()) taiLai('tu');
+}
+setInterval(kiemBanMoi, 60000);
+setInterval(() => { if (LM.moi && ranh() && document.visibilityState === 'visible') taiLai('tu'); }, 3000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kiemBanMoi(); });
+// vừa tải lại: về đúng chỗ đang xem
+function khoiPhuc() {
+  let s = null;
+  try { s = JSON.parse(sessionStorage.getItem(GIU) || 'null'); sessionStorage.removeItem(GIU); } catch (e) { return; }
+  if (!s || typeof s !== 'object' || !(Date.now() - s.t < 10 * 60e3)) return;
+  try { history.scrollRestoration = 'manual'; } catch (e) { /* old browser */ }
+  const f = FILTERS.some(x => x.k === s.f) ? s.f : 'all', sort = s.sort === 'choi' ? 'choi' : 'moi';
+  const plat = typeof s.plat === 'string' ? s.plat : null, q = typeof s.q === 'string' ? s.q.slice(0, 100) : '';
+  const limit = Math.min(5000, Math.max(PAGE, s.limit | 0));
+  if (q !== S.q || f !== S.f || plat !== S.plat || sort !== S.sort || limit !== S.limit) {
+    Object.assign(S, { q, f, plat, sort, limit });
+    UI.q.value = q;
+    renderList();
+  }
+  const g = typeof s.row === 'string' ? byId.get(s.row) : null, r = g ? rowCache.get(g.key) : null;
+  if (r && r.li.isConnected) { setRowOpen(r, true); openRow = r; }
+  if (Array.isArray(s.viec)) document.querySelectorAll('#viec details.task').forEach(d => { if (s.viec.includes(d.dataset.k)) d.open = true; });
+  const y = Math.max(0, s.y | 0), t1 = Date.now(), go = () => { if (Date.now() - t1 < 2000) window.scrollTo(0, y); };
+  go(); requestAnimationFrame(go);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(go);
+  if (s.ly === 'bam') toast('Đã cập nhật số mới nhất · ' + (gioNgan(D.cap_nhat) || ''), { an: 5000 });
+  else if (s.ly === 'tu') toast('Trang vừa tự cập nhật số mới · ' + (gioNgan(D.cap_nhat) || ''), { an: 4000 });
+}
+
+/* ---------- 07 cost ---------- */
+function renderChiPhi() {
+  const b = $('#b-chi-phi');
+  const rows = (Array.isArray(D.chi_phi) ? D.chi_phi : []).filter(r => r && typeof r.ngay === 'string' && DAYRE.test(r.ngay)).map(r => ({ ngay: r.ngay.slice(0, 10), viec: r.viec, usd: isNum(r.usd) ? r.usd : null }));
+  const per = new Map(); for (const r of rows) { const a = per.get(r.ngay) || { v: 0, n: 0, k: 0 }; if (r.usd != null) { a.v += r.usd; a.k++; } a.n++; per.set(r.ngay, a); }
+  const known = rows.filter(r => r.usd != null);
+  const today = isNum(T.chi_phi_hom_nay_usd) ? T.chi_phi_hom_nay_usd : (TODAY && per.has(TODAY) && per.get(TODAY).k ? per.get(TODAY).v : null);
+  const d30 = isNum(T.chi_phi_30_ngay_usd) ? T.chi_phi_30_ngay_usd : (known.length ? sum(known.map(r => r.usd)) : null);
+  b.append(ans([today != null ? [ucFirst(HN) + ' khoảng ', B(usd(today) + ' đô')] : [ucFirst(HN) + ' ', NA('chưa có số')], ', ', d30 != null ? ['30 ngày khoảng ', B(usd(d30) + ' đô')] : ['30 ngày ', NA('chưa có số')], '.']));
+  b.append(h('p', { class: 'note' }, 'Số đô là quy đổi theo giá API để so sánh, không phải tiền bạn trả thêm: bạn trả gói Claude cố định.'));
+  if (!rows.length) { b.append(srcLine(['Sổ hạn mức Claude'])); return; }
+  const keys = [...per.keys()].sort();
+  const last = TODAY && TODAY > keys[keys.length - 1] ? TODAY : keys[keys.length - 1];
+  const days = []; for (let k = keys[0], guard = 0; k <= last && guard < 400; k = addDays(k, 1), guard++) days.push(k);
+  // a day with jobs but no cost written down has no number (not 0); a day with no jobs cost 0
+  const pts = days.slice(-30).map(k => { const a = per.get(k); return { key: k, label: dm(k), v: a ? (a.k ? a.v : null) : 0, n: a ? a.n : 0, miss: a ? a.n - a.k : 0, em: k === TODAY }; });
+  // one heading row per day, then that day's jobs: the job text gets the full width
+  const tbody = h('tbody');
+  for (const k of keys.slice().reverse()) {
+    const a = per.get(k), miss = a.n - a.k;
+    tbody.append(h('tr', { class: 'day' }, h('td', null, dm(k) + ' ', h('span', { class: 'c' }, '· ' + a.n + ' việc' + (miss ? ', ' + miss + ' chưa có số' : ''))), h('td', { class: 'u' }, a.k ? NF2.format(a.v) : 'chưa có số')));
+    for (const r of rows.filter(r => r.ngay === k)) tbody.append(h('tr', null, h('td', null, r.viec || '–'), h('td', { class: 'u' }, r.usd != null ? NF2.format(r.usd) : 'chưa có số')));
+  }
+  b.append(chartBox('Chi phí mỗi ngày', 'đô, quy đổi giá API',
+    chart(drawCols(pts, { h: 124, label: 'Chi phí mỗi ngày, đô quy đổi giá API', fmt: v => v == null ? '' : usd(v), title: d => d.label + ': ' + (d.v == null ? 'chưa có số' : NF2.format(d.v) + ' đô') + ' · ' + d.n + ' việc' + (d.miss && d.v != null ? ', ' + d.miss + ' việc chưa có số' : '') }))));
+  b.append(more('Xem từng việc', rows.length + ' việc trong ' + keys.length + ' ngày có ghi sổ',
+    h('div', { class: 'tscroll' }, h('table', { class: 'tbl' }, h('thead', null, h('tr', null, h('th', null, 'Ngày, việc'), h('th', { class: 'u' }, 'Đô'))), tbody)), { flush: true }));
+  b.append(srcLine(['Sổ hạn mức Claude']));
+}
+
+/* ---------- 08 sources ---------- */
+function renderNguon() {
+  const b = $('#b-nguon');
+  const bad = NGUON.filter(x => !x.ok);
+  const times = NGUON.map(x => tms(x.luc)).filter(t => t != null);
+  const oldest = times.length ? Math.min(...times) : null, newest = times.length ? Math.max(...times) : null;
+  const isoT = t => new Date(t).toISOString();
+  const when = oldest == null ? '.' : gio(isoT(oldest)) === gio(isoT(newest)) ? '. Số đọc lúc ' + gio(isoT(oldest)) + '.' : '. Số đọc từ ' + gio(isoT(oldest)) + ' đến ' + gio(isoT(newest)) + '.';
+  b.append(ans(NGUON.length ? [B(NGUON.length - bad.length + '/' + NGUON.length), ' nguồn đọc được', bad.length ? ['; lỗi: ', bad.map(x => x.ten).join(', ')] : '', when] : ['Chưa có danh sách nguồn.']));
+  if (!NGUON.length) return;
+  // a green dot is enough for "đọc được"; only a broken source gets the red pill
+  b.append(more('Xem ' + NGUON.length + ' nguồn và giờ đọc', bad.length ? bad.length + ' nguồn lỗi' : 'đều đọc được',
+    h('ul', { class: 'srcl' }, NGUON.map(x => h('li', null,
+      h('div', { class: 's-top' }, h('i', { class: 'sd' + (x.ok ? '' : ' bad'), 'aria-hidden': 'true' }), h('span', { class: 's-name' }, x.ten), x.ok ? h('span', { class: 'sr' }, '(đọc được)') : pill('bad', 'lỗi')),
+      h('p', { class: 's-time' }, x.luc ? 'đọc lúc ' + gio(x.luc) + ' · ' + ago(x.luc) : 'chưa rõ giờ đọc'),
+      x.ghi_chu ? h('p', { class: 's-note' }, x.ghi_chu) : null))),
+    { dot: true, flush: true, cls: bad.length ? 'has-bad' : '', open: bad.length > 0 }));
+}
+
+/* ---------- boot ---------- */
+renderMeta(); renderScore(); renderTop();
+renderTong(); renderTrang(); renderKhach(); renderCoHoi(); renderDangLam(); renderGame(); renderChiPhi(); renderNguon();
+renderNav();
+drawCharts(true);
+// charts inside a closed "xem thêm" get drawn when it opens
+document.addEventListener('toggle', e => { if (e.target && e.target.open) drawCharts(false); }, true);
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => drawCharts(false), 120); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawCharts(true); setNavVar(); });
+setInterval(() => { const a = document.getElementById('ago'); if (a && D.cap_nhat) a.textContent = ' · ' + ago(D.cap_nhat); }, 60000);
+khoiPhuc();
+})();
+</script>
+</body>
+</html>
